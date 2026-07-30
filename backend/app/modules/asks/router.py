@@ -3,11 +3,12 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from bson import ObjectId
 from pymongo import ReturnDocument
+import random
 
 from app.database import get_db
 from app.websocket import manager
 from app.modules.auth.utils import get_current_user
-from app.modules.asks.models import CreateAskRequest, CreateReplyRequest, AskResponse, AskReplyResponse
+from app.modules.asks.models import CreateAskRequest, CreateReplyRequest, VerifyPinRequest, AskResponse, AskReplyResponse
 
 router = APIRouter(prefix="/api/asks", tags=["asks"])
 
@@ -40,7 +41,19 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
     requester = await db.users.find_one({"_id": ObjectId(ask_doc["requester_id"])})
     requester_username = requester.get("username", "unknown") if requester else "unknown"
     requester_display_name = requester.get("display_name", "Anonymous") if requester else "Anonymous"
+    requester_phone = requester.get("phone", "") if requester else ""
     
+    accepted_reply_id = ask_doc.get("accepted_reply_id")
+    accepted_responder_id = ask_doc.get("accepted_responder_id")
+    
+    accepted_responder_name = None
+    accepted_responder_phone = None
+    if accepted_responder_id:
+        acc_user = await db.users.find_one({"_id": ObjectId(accepted_responder_id)})
+        if acc_user:
+            accepted_responder_name = acc_user.get("display_name", "Friend")
+            accepted_responder_phone = acc_user.get("phone", "")
+
     # Fetch replies
     replies_cursor = db.replies.find({"ask_id": ask_id_str}).sort("created_at", 1)
     replies_list = []
@@ -51,29 +64,52 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
             has_replied = True
             
         resp_user = await db.users.find_one({"_id": ObjectId(rep["responder_id"])})
+        
+        # Phone details only revealed if requester or accepted responder
+        resp_phone = None
+        if current_user_id == ask_doc["requester_id"] or current_user_id == rep["responder_id"]:
+            resp_phone = resp_user.get("phone", "") if resp_user else ""
+
         replies_list.append(AskReplyResponse(
             id=str(rep["_id"]),
             ask_id=ask_id_str,
             responder_id=rep["responder_id"],
             responder_username=resp_user.get("username", "unknown") if resp_user else "unknown",
             responder_display_name=resp_user.get("display_name", "Friend") if resp_user else "Friend",
+            responder_phone=resp_phone,
             text=rep["text"],
-            created_at=rep["created_at"]
+            created_at=rep["created_at"],
+            is_accepted=(str(rep["_id"]) == accepted_reply_id)
         ))
         
+    # Reveal PIN and private contact info ONLY to requester or accepted helper
+    is_requester = (ask_doc["requester_id"] == current_user_id)
+    is_accepted_helper = (accepted_responder_id == current_user_id)
+    
+    pin_to_show = ask_doc.get("handover_pin") if (is_requester or is_accepted_helper) else None
+    req_phone_to_show = requester_phone if (is_requester or is_accepted_helper) else None
+    acc_phone_to_show = accepted_responder_phone if (is_requester or is_accepted_helper) else None
+
     return AskResponse(
         id=ask_id_str,
         requester_id=ask_doc["requester_id"],
         requester_username=requester_username,
         requester_display_name=requester_display_name,
+        requester_phone=req_phone_to_show,
         text=ask_doc["text"],
         location_tag=ask_doc.get("location_tag", "Main Campus"),
+        visibility=ask_doc.get("visibility", "friends"),
         status=current_status,
         reply_count=ask_doc.get("reply_count", 0),
         created_at=ask_doc["created_at"],
         expires_at=ask_doc["expires_at"],
+        accepted_reply_id=accepted_reply_id,
+        accepted_responder_id=accepted_responder_id,
+        accepted_responder_name=accepted_responder_name,
+        accepted_responder_phone=acc_phone_to_show,
+        handover_pin=pin_to_show,
         replies=replies_list,
-        is_requester=(ask_doc["requester_id"] == current_user_id),
+        is_requester=is_requester,
         has_replied=has_replied
     )
 
@@ -85,10 +121,13 @@ async def create_ask(req: CreateAskRequest, current_user: dict = Depends(get_cur
     now = datetime.utcnow()
     expires = now + timedelta(minutes=req.expiry_minutes)
     
+    visibility_val = "public" if req.visibility == "public" else "friends"
+    
     ask_doc = {
         "requester_id": user_id,
         "text": req.text.strip(),
         "location_tag": req.location_tag.strip() if req.location_tag else "Main Campus",
+        "visibility": visibility_val,
         "status": "open",
         "reply_count": 0,
         "created_at": now.isoformat(),
@@ -100,13 +139,18 @@ async def create_ask(req: CreateAskRequest, current_user: dict = Depends(get_cur
     
     formatted_ask = await format_ask_response(ask_doc, user_id)
     
-    # Send WS to mutual friends
-    friend_ids = await get_mutual_friend_ids(user_id)
     ws_payload = {
         "event": "NEW_ASK",
         "ask": formatted_ask.model_dump()
     }
-    await manager.send_to_users(friend_ids, ws_payload)
+
+    if visibility_val == "public":
+        # Broadcast to ALL connected users on campus
+        await manager.broadcast_all_users(ws_payload)
+    else:
+        # Send WS to mutual friends
+        friend_ids = await get_mutual_friend_ids(user_id)
+        await manager.send_to_users(friend_ids, ws_payload)
     
     # Broadcast anonymized event to public board
     board_payload = {
@@ -115,6 +159,7 @@ async def create_ask(req: CreateAskRequest, current_user: dict = Depends(get_cur
             "id": formatted_ask.id,
             "text": formatted_ask.text,
             "location_tag": formatted_ask.location_tag,
+            "visibility": formatted_ask.visibility,
             "status": "open",
             "reply_count": 0,
             "created_at": formatted_ask.created_at,
@@ -133,9 +178,12 @@ async def get_feed(current_user: dict = Depends(get_current_user)):
     friend_ids = await get_mutual_friend_ids(user_id)
     allowed_requesters = friend_ids + [user_id]
     
-    # Find asks where requester is user or friend
+    # Find asks where requester is user/friend OR visibility is public
     cursor = db.asks.find({
-        "requester_id": {"$in": allowed_requesters}
+        "$or": [
+            {"requester_id": {"$in": allowed_requesters}},
+            {"visibility": "public"}
+        ]
     }).sort("created_at", -1).limit(50)
     
     asks_feed = []
@@ -168,9 +216,9 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
         raise HTTPException(status_code=400, detail="This ask has expired")
         
     if ask.get("status") != "open":
-        raise HTTPException(status_code=409, detail="This ask is already closed")
+        raise HTTPException(status_code=409, detail="This ask is already closed or claimed")
         
-    # Prevent duplicate reply from same user if already replied
+    # Prevent duplicate reply from same user
     existing_reply = await db.replies.find_one({"ask_id": ask_id, "responder_id": user_id})
     if existing_reply:
         raise HTTPException(status_code=400, detail="You have already replied to this ask")
@@ -182,7 +230,7 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
         return_document=ReturnDocument.AFTER
     )
     if result is None:
-        raise HTTPException(status_code=409, detail="This ask is already closed")
+        raise HTTPException(status_code=409, detail="This ask is already closed or claimed")
         
     # If 5th reply recorded, lock status atomically
     if result["reply_count"] >= 5:
@@ -210,23 +258,23 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
         responder_id=user_id,
         responder_username=current_user["username"],
         responder_display_name=current_user["display_name"],
+        responder_phone=current_user.get("phone", ""),
         text=reply_doc["text"],
         created_at=now_str
     )
     
     # Broadcast updates via WebSocket
-    friend_ids = await get_mutual_friend_ids(ask["requester_id"])
-    all_notified = list(set(friend_ids + [ask["requester_id"]]))
-    
-    updated_ask = await format_ask_response(result, user_id)
-    ws_payload = {
-        "event": "ASK_UPDATED",
-        "ask": updated_ask.model_dump()
-    }
-    await manager.send_to_users(all_notified, ws_payload)
+    if ask.get("visibility") == "public":
+        updated_ask = await format_ask_response(result, user_id)
+        await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+    else:
+        friend_ids = await get_mutual_friend_ids(ask["requester_id"])
+        all_notified = list(set(friend_ids + [ask["requester_id"]]))
+        updated_ask = await format_ask_response(result, user_id)
+        await manager.send_to_users(all_notified, {"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
     
     # Broadcast public board update
-    board_payload = {
+    await manager.broadcast_board({
         "event": "BOARD_ASK_UPDATED",
         "ask": {
             "id": ask_id,
@@ -237,10 +285,105 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
             "created_at": ask["created_at"],
             "expires_at": ask["expires_at"]
         }
-    }
-    await manager.broadcast_board(board_payload)
+    })
     
     return reply_response
+
+@router.post("/{ask_id}/accept/{reply_id}")
+async def accept_offer(ask_id: str, reply_id: str, current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    user_id = str(current_user["_id"])
+    
+    try:
+        ask_id_obj = ObjectId(ask_id)
+        reply_id_obj = ObjectId(reply_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+        
+    ask = await db.asks.find_one({"_id": ask_id_obj, "requester_id": user_id})
+    if not ask:
+        raise HTTPException(status_code=404, detail="Ask not found or you are not the requester")
+        
+    if ask.get("status") in ["claimed", "completed", "resolved", "expired"]:
+        raise HTTPException(status_code=400, detail=f"Ask is already {ask.get('status')}")
+        
+    reply = await db.replies.find_one({"_id": reply_id_obj, "ask_id": ask_id})
+    if not reply:
+        raise HTTPException(status_code=404, detail="Reply offer not found")
+        
+    # Generate 4-digit Handover PIN
+    pin = f"{random.randint(1000, 9999)}"
+    
+    await db.asks.update_one(
+        {"_id": ask_id_obj},
+        {"$set": {
+            "status": "claimed",
+            "accepted_reply_id": reply_id,
+            "accepted_responder_id": reply["responder_id"],
+            "handover_pin": pin
+        }}
+    )
+    ask["status"] = "claimed"
+    ask["accepted_reply_id"] = reply_id
+    ask["accepted_responder_id"] = reply["responder_id"]
+    ask["handover_pin"] = pin
+    
+    # Broadcast update
+    if ask.get("visibility") == "public":
+        updated_ask = await format_ask_response(ask, user_id)
+        await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+    else:
+        friend_ids = await get_mutual_friend_ids(user_id)
+        all_notified = list(set(friend_ids + [user_id, reply["responder_id"]]))
+        updated_ask = await format_ask_response(ask, user_id)
+        await manager.send_to_users(all_notified, {"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+        
+    await manager.broadcast_board({
+        "event": "BOARD_ASK_UPDATED",
+        "ask": {
+            "id": ask_id,
+            "text": ask["text"],
+            "location_tag": ask.get("location_tag", "Main Campus"),
+            "status": "claimed",
+            "reply_count": ask.get("reply_count", 0),
+            "created_at": ask["created_at"],
+            "expires_at": ask["expires_at"]
+        }
+    })
+    
+    return {"message": "Offer accepted! Handoff PIN generated.", "handover_pin": pin}
+
+@router.post("/{ask_id}/verify-pin")
+async def verify_handover_pin(ask_id: str, req: VerifyPinRequest, current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    user_id = str(current_user["_id"])
+    
+    try:
+        ask_id_obj = ObjectId(ask_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ask ID format")
+        
+    ask = await db.asks.find_one({"_id": ask_id_obj, "requester_id": user_id})
+    if not ask:
+        raise HTTPException(status_code=404, detail="Ask not found or you are not the requester")
+        
+    if ask.get("handover_pin") != req.pin.strip():
+        raise HTTPException(status_code=400, detail="Invalid Handover PIN")
+        
+    await db.asks.update_one({"_id": ask_id_obj}, {"$set": {"status": "completed"}})
+    ask["status"] = "completed"
+    
+    # Broadcast update
+    if ask.get("visibility") == "public":
+        updated_ask = await format_ask_response(ask, user_id)
+        await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+    else:
+        friend_ids = await get_mutual_friend_ids(user_id)
+        all_notified = list(set(friend_ids + [user_id]))
+        updated_ask = await format_ask_response(ask, user_id)
+        await manager.send_to_users(all_notified, {"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+        
+    return {"message": "Item handover verified & ask completed!"}
 
 @router.post("/{ask_id}/resolve")
 async def resolve_ask(ask_id: str, current_user: dict = Depends(get_current_user)):
@@ -289,10 +432,7 @@ async def get_history(current_user: dict = Depends(get_current_user)):
     db = get_db()
     user_id = str(current_user["_id"])
     
-    # Asks created by user
     user_asks_cursor = db.asks.find({"requester_id": user_id, "cleared_by": {"$ne": user_id}})
-    
-    # Asks user replied to
     user_replies_cursor = db.replies.find({"responder_id": user_id})
     replied_ask_ids = [rep["ask_id"] async for rep in user_replies_cursor]
     
@@ -326,7 +466,6 @@ async def clear_history(current_user: dict = Depends(get_current_user)):
     db = get_db()
     user_id = str(current_user["_id"])
     
-    # Mark asks as cleared_by for this user so they don't appear in history
     await db.asks.update_many(
         {"$or": [{"requester_id": user_id}, {"_id": {"$in": [ObjectId(aid) for aid in (await db.replies.distinct("ask_id", {"responder_id": user_id})) if ObjectId.is_valid(aid)]}}]},
         {"$addToSet": {"cleared_by": user_id}}

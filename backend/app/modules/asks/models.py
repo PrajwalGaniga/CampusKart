@@ -5,10 +5,14 @@ from datetime import datetime
 class CreateAskRequest(BaseModel):
     text: str = Field(..., min_length=3, max_length=280, example="Need an iPhone charger near Library 2nd floor!")
     location_tag: Optional[str] = Field(default="Main Campus", max_length=50, example="Library 2nd Floor")
+    visibility: Optional[str] = Field(default="friends", example="friends") # "friends" or "public"
     expiry_minutes: Optional[int] = Field(default=20, ge=1, le=120)
 
 class CreateReplyRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=280, example="I have one! I am at table 4.")
+
+class VerifyPinRequest(BaseModel):
+    pin: str = Field(..., min_length=4, max_length=4, example="4829")
 
 class AskReplyResponse(BaseModel):
     id: str
@@ -16,20 +20,29 @@ class AskReplyResponse(BaseModel):
     responder_id: str
     responder_username: str
     responder_display_name: str
+    responder_phone: Optional[str] = None
     text: str
     created_at: str
+    is_accepted: bool = False
 
 class AskResponse(BaseModel):
     id: str
     requester_id: str
     requester_username: str
     requester_display_name: str
+    requester_phone: Optional[str] = None
     text: str
     location_tag: str
-    status: str  # "open", "locked", "expired", "resolved"
+    visibility: str  # "friends" or "public"
+    status: str      # "open", "locked", "claimed", "completed", "expired", "resolved"
     reply_count: int
     created_at: str
     expires_at: str
+    accepted_reply_id: Optional[str] = None
+    accepted_responder_id: Optional[str] = None
+    accepted_responder_name: Optional[str] = None
+    accepted_responder_phone: Optional[str] = None
+    handover_pin: Optional[str] = None
     replies: Optional[List[AskReplyResponse]] = []
     is_requester: bool = False
     has_replied: bool = False

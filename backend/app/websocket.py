@@ -51,6 +51,10 @@ class ConnectionManager:
         for uid in user_ids:
             await self.send_to_user(uid, message)
 
+    async def broadcast_all_users(self, message: dict):
+        for user_id in list(self.user_connections.keys()):
+            await self.send_to_user(user_id, message)
+
     async def broadcast_board(self, message: dict):
         dead_sockets = set()
         for ws in list(self.board_connections):
