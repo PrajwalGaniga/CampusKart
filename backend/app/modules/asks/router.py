@@ -8,7 +8,14 @@ import random
 from app.database import get_db
 from app.websocket import manager
 from app.modules.auth.utils import get_current_user
-from app.modules.asks.models import CreateAskRequest, CreateReplyRequest, VerifyPinRequest, AskResponse, AskReplyResponse
+from app.modules.asks.models import (
+    CreateAskRequest,
+    CreateReplyRequest,
+    VerifyPinRequest,
+    HandoffStatusRequest,
+    AskResponse,
+    AskReplyResponse
+)
 
 router = APIRouter(prefix="/api/asks", tags=["asks"])
 
@@ -48,11 +55,23 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
     
     accepted_responder_name = None
     accepted_responder_phone = None
+    accepted_responder_location = None
+    accepted_responder_eta = None
+    
     if accepted_responder_id:
         acc_user = await db.users.find_one({"_id": ObjectId(accepted_responder_id)})
         if acc_user:
             accepted_responder_name = acc_user.get("display_name", "Friend")
             accepted_responder_phone = acc_user.get("phone", "")
+
+    if accepted_reply_id:
+        try:
+            acc_rep = await db.replies.find_one({"_id": ObjectId(accepted_reply_id)})
+            if acc_rep:
+                accepted_responder_location = acc_rep.get("helper_location", "Nearby")
+                accepted_responder_eta = acc_rep.get("eta_minutes", 2)
+        except Exception:
+            pass
 
     # Fetch replies
     replies_cursor = db.replies.find({"ask_id": ask_id_str}).sort("created_at", 1)
@@ -65,7 +84,6 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
             
         resp_user = await db.users.find_one({"_id": ObjectId(rep["responder_id"])})
         
-        # Phone details only revealed if requester or accepted responder
         resp_phone = None
         if current_user_id == ask_doc["requester_id"] or current_user_id == rep["responder_id"]:
             resp_phone = resp_user.get("phone", "") if resp_user else ""
@@ -77,12 +95,13 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
             responder_username=resp_user.get("username", "unknown") if resp_user else "unknown",
             responder_display_name=resp_user.get("display_name", "Friend") if resp_user else "Friend",
             responder_phone=resp_phone,
+            helper_location=rep.get("helper_location", "Nearby"),
+            eta_minutes=rep.get("eta_minutes", 2),
             text=rep["text"],
             created_at=rep["created_at"],
             is_accepted=(str(rep["_id"]) == accepted_reply_id)
         ))
         
-    # Reveal PIN and private contact info ONLY to requester or accepted helper
     is_requester = (ask_doc["requester_id"] == current_user_id)
     is_accepted_helper = (accepted_responder_id == current_user_id)
     
@@ -100,6 +119,7 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
         location_tag=ask_doc.get("location_tag", "Main Campus"),
         visibility=ask_doc.get("visibility", "friends"),
         status=current_status,
+        handoff_status=ask_doc.get("handoff_status", "accepted"),
         reply_count=ask_doc.get("reply_count", 0),
         created_at=ask_doc["created_at"],
         expires_at=ask_doc["expires_at"],
@@ -107,6 +127,8 @@ async def format_ask_response(ask_doc: dict, current_user_id: str) -> AskRespons
         accepted_responder_id=accepted_responder_id,
         accepted_responder_name=accepted_responder_name,
         accepted_responder_phone=acc_phone_to_show,
+        accepted_responder_location=accepted_responder_location,
+        accepted_responder_eta=accepted_responder_eta,
         handover_pin=pin_to_show,
         replies=replies_list,
         is_requester=is_requester,
@@ -145,14 +167,11 @@ async def create_ask(req: CreateAskRequest, current_user: dict = Depends(get_cur
     }
 
     if visibility_val == "public":
-        # Broadcast to ALL connected users on campus
         await manager.broadcast_all_users(ws_payload)
     else:
-        # Send WS to mutual friends
         friend_ids = await get_mutual_friend_ids(user_id)
         await manager.send_to_users(friend_ids, ws_payload)
     
-    # Broadcast anonymized event to public board
     board_payload = {
         "event": "BOARD_NEW_ASK",
         "ask": {
@@ -178,7 +197,6 @@ async def get_feed(current_user: dict = Depends(get_current_user)):
     friend_ids = await get_mutual_friend_ids(user_id)
     allowed_requesters = friend_ids + [user_id]
     
-    # Find asks where requester is user/friend OR visibility is public
     cursor = db.asks.find({
         "$or": [
             {"requester_id": {"$in": allowed_requesters}},
@@ -207,7 +225,6 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
     if not ask:
         raise HTTPException(status_code=404, detail="Ask not found")
         
-    # Check expiry
     now_dt = datetime.utcnow()
     expires_dt = datetime.fromisoformat(ask["expires_at"])
     if now_dt > expires_dt or ask.get("status") == "expired":
@@ -218,7 +235,6 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
     if ask.get("status") != "open":
         raise HTTPException(status_code=409, detail="This ask is already closed or claimed")
         
-    # Prevent duplicate reply from same user
     existing_reply = await db.replies.find_one({"ask_id": ask_id, "responder_id": user_id})
     if existing_reply:
         raise HTTPException(status_code=400, detail="You have already replied to this ask")
@@ -232,7 +248,6 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
     if result is None:
         raise HTTPException(status_code=409, detail="This ask is already closed or claimed")
         
-    # If 5th reply recorded, lock status atomically
     if result["reply_count"] >= 5:
         await db.asks.update_one(
             {"_id": ask_id_obj},
@@ -240,12 +255,13 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
         )
         result["status"] = "locked"
 
-    # Insert reply document
     now_str = datetime.utcnow().isoformat()
     reply_doc = {
         "ask_id": ask_id,
         "responder_id": user_id,
         "text": req.text.strip(),
+        "helper_location": req.helper_location.strip() if req.helper_location else "Nearby",
+        "eta_minutes": req.eta_minutes if req.eta_minutes else 2,
         "created_at": now_str
     }
     
@@ -259,11 +275,12 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
         responder_username=current_user["username"],
         responder_display_name=current_user["display_name"],
         responder_phone=current_user.get("phone", ""),
+        helper_location=reply_doc["helper_location"],
+        eta_minutes=reply_doc["eta_minutes"],
         text=reply_doc["text"],
         created_at=now_str
     )
     
-    # Broadcast updates via WebSocket
     if ask.get("visibility") == "public":
         updated_ask = await format_ask_response(result, user_id)
         await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
@@ -273,7 +290,6 @@ async def reply_to_ask(ask_id: str, req: CreateReplyRequest, current_user: dict 
         updated_ask = await format_ask_response(result, user_id)
         await manager.send_to_users(all_notified, {"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
     
-    # Broadcast public board update
     await manager.broadcast_board({
         "event": "BOARD_ASK_UPDATED",
         "ask": {
@@ -311,24 +327,24 @@ async def accept_offer(ask_id: str, reply_id: str, current_user: dict = Depends(
     if not reply:
         raise HTTPException(status_code=404, detail="Reply offer not found")
         
-    # Generate 4-digit Handover PIN
     pin = f"{random.randint(1000, 9999)}"
     
     await db.asks.update_one(
         {"_id": ask_id_obj},
         {"$set": {
             "status": "claimed",
+            "handoff_status": "accepted",
             "accepted_reply_id": reply_id,
             "accepted_responder_id": reply["responder_id"],
             "handover_pin": pin
         }}
     )
     ask["status"] = "claimed"
+    ask["handoff_status"] = "accepted"
     ask["accepted_reply_id"] = reply_id
     ask["accepted_responder_id"] = reply["responder_id"]
     ask["handover_pin"] = pin
     
-    # Broadcast update
     if ask.get("visibility") == "public":
         updated_ask = await format_ask_response(ask, user_id)
         await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
@@ -351,7 +367,44 @@ async def accept_offer(ask_id: str, reply_id: str, current_user: dict = Depends(
         }
     })
     
-    return {"message": "Offer accepted! Handoff PIN generated.", "handover_pin": pin}
+    return {"message": "Offer accepted! Proximity and Handoff tracking started.", "handover_pin": pin}
+
+@router.post("/{ask_id}/update-handoff-status")
+async def update_handoff_status(ask_id: str, req: HandoffStatusRequest, current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    user_id = str(current_user["_id"])
+    
+    try:
+        ask_id_obj = ObjectId(ask_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ask ID format")
+        
+    ask = await db.asks.find_one({"_id": ask_id_obj})
+    if not ask:
+        raise HTTPException(status_code=404, detail="Ask not found")
+        
+    # Must be requester or accepted responder
+    if ask.get("requester_id") != user_id and ask.get("accepted_responder_id") != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update handoff status")
+        
+    new_status = req.handoff_status.strip().lower()
+    if new_status not in ["en_route", "arrived"]:
+        raise HTTPException(status_code=400, detail="Invalid handoff status value")
+        
+    await db.asks.update_one({"_id": ask_id_obj}, {"$set": {"handoff_status": new_status}})
+    ask["handoff_status"] = new_status
+    
+    # Broadcast update
+    if ask.get("visibility") == "public":
+        updated_ask = await format_ask_response(ask, user_id)
+        await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+    else:
+        friend_ids = await get_mutual_friend_ids(ask["requester_id"])
+        all_notified = list(set(friend_ids + [ask["requester_id"], ask.get("accepted_responder_id")]))
+        updated_ask = await format_ask_response(ask, user_id)
+        await manager.send_to_users(all_notified, {"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
+        
+    return {"message": f"Handoff status updated to {new_status}"}
 
 @router.post("/{ask_id}/verify-pin")
 async def verify_handover_pin(ask_id: str, req: VerifyPinRequest, current_user: dict = Depends(get_current_user)):
@@ -370,10 +423,10 @@ async def verify_handover_pin(ask_id: str, req: VerifyPinRequest, current_user: 
     if ask.get("handover_pin") != req.pin.strip():
         raise HTTPException(status_code=400, detail="Invalid Handover PIN")
         
-    await db.asks.update_one({"_id": ask_id_obj}, {"$set": {"status": "completed"}})
+    await db.asks.update_one({"_id": ask_id_obj}, {"$set": {"status": "completed", "handoff_status": "completed"}})
     ask["status"] = "completed"
+    ask["handoff_status"] = "completed"
     
-    # Broadcast update
     if ask.get("visibility") == "public":
         updated_ask = await format_ask_response(ask, user_id)
         await manager.broadcast_all_users({"event": "ASK_UPDATED", "ask": updated_ask.model_dump()})
@@ -402,7 +455,6 @@ async def resolve_ask(ask_id: str, current_user: dict = Depends(get_current_user
     await db.asks.update_one({"_id": ask_id_obj}, {"$set": {"status": "resolved"}})
     ask["status"] = "resolved"
     
-    # Notify WS
     friend_ids = await get_mutual_friend_ids(user_id)
     all_notified = list(set(friend_ids + [user_id]))
     

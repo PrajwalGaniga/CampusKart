@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { asksApi } from '../api';
-import { Radio, Plus, MessageSquare, Send, CheckCircle, Clock, MapPin, Lock, AlertCircle, X, Users, Globe, ShieldCheck, Phone, Key } from 'lucide-react';
+import { Radio, Plus, MessageSquare, Send, CheckCircle, Clock, MapPin, Lock, AlertCircle, X, Users, Globe, ShieldCheck, Phone, Key, Navigation, Zap } from 'lucide-react';
 
 export function Feed() {
   const { user } = useAuth();
@@ -13,7 +13,7 @@ export function Feed() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [askText, setAskText] = useState('');
   const [locationTag, setLocationTag] = useState('Main Campus');
-  const [visibility, setVisibility] = useState('friends'); // 'friends' or 'public'
+  const [visibility, setVisibility] = useState('friends');
   const [expiryMins, setExpiryMins] = useState(20);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState(null);
@@ -21,13 +21,16 @@ export function Feed() {
   // Reply / Details Modal State
   const [selectedAsk, setSelectedAsk] = useState(null);
   const [replyText, setReplyText] = useState('');
+  const [helperLocation, setHelperLocation] = useState('Library 1st Floor');
+  const [etaMinutes, setEtaMinutes] = useState(2);
   const [replyLoading, setReplyLoading] = useState(false);
   const [replyError, setReplyError] = useState(null);
   const [actionSuccessMsg, setActionSuccessMsg] = useState(null);
 
-  // PIN Verification Input
+  // PIN Verification Input & Handoff Action
   const [inputPin, setInputPin] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const loadFeed = async () => {
     try {
@@ -120,7 +123,12 @@ export function Feed() {
     setReplyError(null);
 
     try {
-      await asksApi.replyToAsk(selectedAsk.id, replyText.trim());
+      await asksApi.replyToAsk(
+        selectedAsk.id,
+        replyText.trim(),
+        helperLocation.trim() || 'Nearby',
+        parseInt(etaMinutes, 10) || 2
+      );
       setReplyText('');
       await loadFeed();
       setSelectedAsk(null);
@@ -138,12 +146,28 @@ export function Feed() {
       const res = await asksApi.acceptOffer(askId, replyId);
       setActionSuccessMsg(res.message);
       await loadFeed();
-      // Refresh selected ask state
       const updatedList = await asksApi.getFeed();
       const match = updatedList.find((a) => a.id === askId);
       if (match) setSelectedAsk(match);
     } catch (err) {
       setReplyError(err.message || 'Failed to accept offer');
+    }
+  };
+
+  const handleUpdateHandoffStatus = async (askId, newStatus) => {
+    setStatusLoading(true);
+    setReplyError(null);
+    try {
+      await asksApi.updateHandoffStatus(askId, newStatus);
+      setActionSuccessMsg(`Handoff status updated to: ${newStatus.replace('_', ' ')}`);
+      await loadFeed();
+      const updatedList = await asksApi.getFeed();
+      const match = updatedList.find((a) => a.id === askId);
+      if (match) setSelectedAsk(match);
+    } catch (err) {
+      setReplyError(err.message || 'Failed to update handoff status');
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -192,7 +216,7 @@ export function Feed() {
             <Radio color="#6366f1" size={28} /> Campus Help Feed
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
-            Broadcast requests to friends or all active campus users. Automatically locks at 5 replies.
+            Broadcast requests with proximity location & live arrival tracking.
           </p>
         </div>
 
@@ -254,7 +278,7 @@ export function Feed() {
                           </>
                         ) : isClaimed ? (
                           <>
-                            <CheckCircle size={12} /> Offer Accepted
+                            <CheckCircle size={12} /> {ask.handoff_status === 'arrived' ? 'Helper Arrived' : ask.handoff_status === 'en_route' ? 'Helper En-Route' : 'Offer Accepted'}
                           </>
                         ) : isResolved ? (
                           <>
@@ -310,7 +334,7 @@ export function Feed() {
                 {/* Card Footer / Actions */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    {isClaimed ? `Accepted Helper: ${ask.accepted_responder_name || 'Friend'}` : ask.reply_count === 0 ? 'No replies yet' : `${ask.reply_count} / 5 replies recorded`}
+                    {isClaimed ? `Accepted Helper: ${ask.accepted_responder_name} (⚡ ${ask.accepted_responder_eta || 2}m away)` : ask.reply_count === 0 ? 'No offers yet' : `${ask.reply_count} / 5 offers recorded`}
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -340,7 +364,7 @@ export function Feed() {
         </div>
       )}
 
-      {/* CREATE ASK MODAL WITH VISIBILITY SELECTOR */}
+      {/* CREATE ASK MODAL */}
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -371,7 +395,7 @@ export function Feed() {
                 />
               </div>
 
-              {/* Broadcast Scope Selector */}
+              {/* Scope Selector */}
               <div className="form-group">
                 <label className="form-label">Broadcast Audience</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
@@ -459,10 +483,10 @@ export function Feed() {
         </div>
       )}
 
-      {/* REPLY & ACCEPT OFFER DETAILS MODAL */}
+      {/* REPLY & OFFER DETAILS MODAL */}
       {selectedAsk && (
         <div className="modal-overlay" onClick={() => setSelectedAsk(null)}>
-          <div className="modal-card" style={{ maxWidth: '560px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card" style={{ maxWidth: '580px' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span className={`badge badge-${selectedAsk.status}`}>
@@ -481,17 +505,39 @@ export function Feed() {
               "{selectedAsk.text}"
             </p>
 
-            {/* SAFE CAMPUS HANDOFF & PICKUP CARD */}
+            {/* SAFE CAMPUS HANDOFF & LIVE TRACKER CARD */}
             {(selectedAsk.status === 'claimed' || selectedAsk.status === 'completed') && (
               <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.3))', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '1.2rem', borderRadius: '14px', marginBottom: '1.2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6ee7b7', fontWeight: 700, fontSize: '1rem', marginBottom: '0.6rem' }}>
-                  <ShieldCheck size={20} />
-                  <span>Campus Safe Handoff Card</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6ee7b7', fontWeight: 700, fontSize: '1rem' }}>
+                    <ShieldCheck size={20} />
+                    <span>Live Handoff Tracker</span>
+                  </div>
+
+                  <span className="badge badge-open" style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
+                    {selectedAsk.handoff_status?.replace('_', ' ') || 'Accepted'}
+                  </span>
+                </div>
+
+                {/* 4-Stage Tracker Progress */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.3rem', textAlign: 'center', marginBottom: '1rem' }}>
+                  {['accepted', 'en_route', 'arrived', 'completed'].map((stg, idx) => {
+                    const stages = ['accepted', 'en_route', 'arrived', 'completed'];
+                    const currentIdx = stages.indexOf(selectedAsk.handoff_status || 'accepted');
+                    const isActive = idx <= currentIdx;
+
+                    return (
+                      <div key={stg} style={{ padding: '0.4rem 0.2rem', background: isActive ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)', borderRadius: '6px', border: `1px solid ${isActive ? '#10b981' : 'transparent'}`, fontSize: '0.7rem', color: isActive ? '#fff' : 'var(--text-dim)', fontWeight: isActive ? 600 : 400 }}>
+                        {idx + 1}. {stg === 'accepted' ? 'Accepted' : stg === 'en_route' ? 'En-Route' : stg === 'arrived' ? 'Arrived' : 'Complete'}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div style={{ fontSize: '0.88rem', color: '#d1fae5', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <div>📍 <strong>Pickup Landmark:</strong> {selectedAsk.location_tag}</div>
                   <div>👤 <strong>Accepted Helper:</strong> {selectedAsk.accepted_responder_name || 'Friend'} {selectedAsk.accepted_responder_phone && `(${selectedAsk.accepted_responder_phone})`}</div>
+                  <div>⚡ <strong>Helper Distance / Location:</strong> {selectedAsk.accepted_responder_location || 'Nearby'} ({selectedAsk.accepted_responder_eta || 2} mins away)</div>
 
                   {/* Handover PIN Display */}
                   {selectedAsk.handover_pin && (
@@ -500,20 +546,39 @@ export function Feed() {
                       <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', letterSpacing: '0.2em', fontFamily: 'monospace' }}>
                         {selectedAsk.handover_pin}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#a7f3d0', marginTop: '0.2rem' }}>
-                        Share or enter this PIN face-to-face when receiving the product!
-                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* PIN Verification Input for Requester */}
+                {/* Helper Controls (I'm On My Way / Arrived) */}
+                {!selectedAsk.is_requester && selectedAsk.status === 'claimed' && (
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                    <button
+                      className="btn-secondary"
+                      style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem', background: selectedAsk.handoff_status === 'en_route' ? 'rgba(99,102,241,0.3)' : undefined }}
+                      onClick={() => handleUpdateHandoffStatus(selectedAsk.id, 'en_route')}
+                      disabled={statusLoading}
+                    >
+                      <Navigation size={14} /> 🏃 I'm On My Way
+                    </button>
+                    <button
+                      className="btn-primary"
+                      style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
+                      onClick={() => handleUpdateHandoffStatus(selectedAsk.id, 'arrived')}
+                      disabled={statusLoading}
+                    >
+                      <MapPin size={14} /> 📍 I Have Arrived
+                    </button>
+                  </div>
+                )}
+
+                {/* Requester PIN Verification */}
                 {selectedAsk.is_requester && selectedAsk.status === 'claimed' && (
                   <form onSubmit={handleVerifyPin} style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Enter 4-digit PIN to complete..."
+                      placeholder="Enter 4-digit PIN when meeting..."
                       maxLength={4}
                       value={inputPin}
                       onChange={(e) => setInputPin(e.target.value)}
@@ -526,7 +591,7 @@ export function Feed() {
               </div>
             )}
 
-            {/* Lock Warning Banner */}
+            {/* Lock Warning */}
             {(selectedAsk.status === 'locked' || selectedAsk.reply_count >= 5) && selectedAsk.status !== 'claimed' && selectedAsk.status !== 'completed' && (
               <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fcd34d', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.75rem', borderRadius: '10px', marginBottom: '1.2rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Lock size={18} />
@@ -548,10 +613,10 @@ export function Feed() {
               </div>
             )}
 
-            {/* List of Replies & Accept Buttons */}
+            {/* OFFERS LIST WITH PROXIMITY & ETA BADGES */}
             <div style={{ marginBottom: '1.5rem' }}>
               <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-                Recorded Offers ({selectedAsk.replies?.length || 0}/5)
+                Incoming Offers ({selectedAsk.replies?.length || 0}/5)
               </h4>
 
               {selectedAsk.replies?.length === 0 ? (
@@ -562,12 +627,19 @@ export function Feed() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '240px', overflowY: 'auto' }}>
                   {selectedAsk.replies?.map((rep) => (
                     <div key={rep.id} style={{ background: rep.is_accepted ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15,23,42,0.6)', border: `1px solid ${rep.is_accepted ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-color)'}`, padding: '0.8rem', borderRadius: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                        <div style={{ fontSize: '0.85rem', color: '#a5b4fc', fontWeight: 600 }}>
-                          @{rep.responder_username} ({rep.responder_display_name})
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        <div>
+                          <span style={{ fontSize: '0.85rem', color: '#a5b4fc', fontWeight: 600, marginRight: '0.5rem' }}>
+                            @{rep.responder_username} ({rep.responder_display_name})
+                          </span>
+
+                          {/* Helper Proximity & ETA Badge */}
+                          <span className="badge" style={{ background: 'rgba(99,102,241,0.2)', color: '#c084fc', border: '1px solid rgba(99,102,241,0.3)', fontSize: '0.72rem' }}>
+                            <Zap size={10} /> {rep.eta_minutes || 2}m away • {rep.helper_location || 'Nearby'}
+                          </span>
                         </div>
 
-                        {/* Accept Button for Requester */}
+                        {/* Accept Offer Button */}
                         {selectedAsk.is_requester && selectedAsk.status !== 'claimed' && selectedAsk.status !== 'completed' && selectedAsk.status !== 'resolved' && (
                           <button
                             className="btn-primary"
@@ -591,22 +663,66 @@ export function Feed() {
               )}
             </div>
 
-            {/* Reply Form */}
+            {/* REPLY FORM WITH PROXIMITY INPUT & ETA SELECTOR */}
             {!selectedAsk.is_requester && selectedAsk.status === 'open' && selectedAsk.reply_count < 5 && (
               <form onSubmit={handleSendReply}>
                 <div className="form-group" style={{ marginBottom: '0.8rem' }}>
-                  <label className="form-label">Your Offer to Help</label>
+                  <label className="form-label">Your Help Offer Details</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. I have one! I am at table 4 right now."
+                    placeholder="e.g. I have an extra charger! I can meet you right now."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     required
                   />
                 </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '0.8rem' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Your Current Location</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Library 1st Floor"
+                      value={helperLocation}
+                      onChange={(e) => setHelperLocation(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Estimated Arrival Time (ETA)</label>
+                    <select
+                      className="form-control"
+                      value={etaMinutes}
+                      onChange={(e) => setEtaMinutes(e.target.value)}
+                    >
+                      <option value={1}>⚡ Instant (&lt; 1 min)</option>
+                      <option value={2}>🏃 2 mins away</option>
+                      <option value={5}>🚶 5 mins away</option>
+                      <option value={10}>🚲 10 mins away</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Quick Location Preset Chips */}
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                  <button type="button" className="btn-secondary" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setHelperLocation('Right Next to You')}>
+                    ⚡ Right Next to You
+                  </button>
+                  <button type="button" className="btn-secondary" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setHelperLocation('Library 1st Floor')}>
+                    📚 Library
+                  </button>
+                  <button type="button" className="btn-secondary" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setHelperLocation('Block A Canteen')}>
+                    ☕ Canteen
+                  </button>
+                  <button type="button" className="btn-secondary" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setHelperLocation('Hostel Gate')}>
+                    🏢 Hostel Gate
+                  </button>
+                </div>
+
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={replyLoading}>
-                  {replyLoading ? 'Submitting Offer...' : 'Send Help Offer'}
+                  {replyLoading ? 'Submitting Offer...' : 'Send Help Offer (With Location & ETA)'}
                 </button>
               </form>
             )}

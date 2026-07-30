@@ -69,8 +69,15 @@ export const friendsApi = {
 export const asksApi = {
   createAsk: (payload) => fetchApi('/asks', { method: 'POST', body: JSON.stringify(payload) }),
   getFeed: () => fetchApi('/asks/feed'),
-  replyToAsk: (askId, text) => fetchApi(`/asks/${askId}/reply`, { method: 'POST', body: JSON.stringify({ text }) }),
+  replyToAsk: (askId, text, helperLocation, etaMinutes) => fetchApi(`/asks/${askId}/reply`, {
+    method: 'POST',
+    body: JSON.stringify({ text, helper_location: helperLocation, eta_minutes: etaMinutes })
+  }),
   acceptOffer: (askId, replyId) => fetchApi(`/asks/${askId}/accept/${replyId}`, { method: 'POST' }),
+  updateHandoffStatus: (askId, handoffStatus) => fetchApi(`/asks/${askId}/update-handoff-status`, {
+    method: 'POST',
+    body: JSON.stringify({ handoff_status: handoffStatus })
+  }),
   verifyPin: (askId, pin) => fetchApi(`/asks/${askId}/verify-pin`, { method: 'POST', body: JSON.stringify({ pin }) }),
   resolveAsk: (askId) => fetchApi(`/asks/${askId}/resolve`, { method: 'POST' }),
   getHistory: () => fetchApi('/asks/history'),
