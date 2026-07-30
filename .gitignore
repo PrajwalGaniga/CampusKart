@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# Temp folders
+prompts/
+reports/
+scratch/
+audit/
+temp/
+.pytest_cache/
