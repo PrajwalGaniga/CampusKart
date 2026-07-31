@@ -14,6 +14,10 @@ async def register_user(user_in: UserCreate) -> User:
             detail="User with this username or email already exists"
         )
     
+    pic = user_in.profile_picture
+    if pic and not pic.startswith("/static/avatars/"):
+        pic = f"/static/avatars/{pic}"
+    
     new_user = User(
         username=user_in.username,
         display_name=user_in.display_name,
@@ -22,7 +26,7 @@ async def register_user(user_in: UserCreate) -> User:
         department=user_in.department,
         year=user_in.year,
         section=user_in.section,
-        profile_picture=user_in.profile_picture,
+        profile_picture=pic,
         role="STUDENT"
     )
     await new_user.insert()

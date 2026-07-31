@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/api_constants.dart';
 
 class AvatarPicker extends StatefulWidget {
   final String initialAvatar;
@@ -96,7 +97,7 @@ class _AvatarPickerState extends State<AvatarPicker> {
                     ],
                   ),
                   child: CircleAvatar(
-                    backgroundImage: AssetImage('assets/avatars/${_avatars[index]}'),
+                    backgroundImage: NetworkImage('${ApiConstants.baseUrl}/static/avatars/${_avatars[index]}'),
                     backgroundColor: Colors.grey[200],
                   ),
                 ),

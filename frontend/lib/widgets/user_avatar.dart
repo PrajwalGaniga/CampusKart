@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/api_constants.dart';
 
 class UserAvatar extends StatelessWidget {
   final String? profilePicture;
@@ -15,17 +16,17 @@ class UserAvatar extends StatelessWidget {
     ImageProvider imageProvider;
 
     if (profilePicture == null || profilePicture!.isEmpty) {
-      imageProvider = const AssetImage('assets/avatars/2.jpg');
+      imageProvider = NetworkImage('${ApiConstants.baseUrl}/static/avatars/2.jpg');
     } else if (profilePicture!.startsWith('http')) {
       imageProvider = NetworkImage(profilePicture!);
     } else if (profilePicture!.startsWith('assets/avatars/')) {
-      imageProvider = AssetImage(profilePicture!);
+      imageProvider = NetworkImage('${ApiConstants.baseUrl}/static/avatars/${profilePicture!.split('/').last}');
     } else if (profilePicture!.endsWith('.jpg') || profilePicture!.endsWith('.png')) {
       // Handles cases like "2.jpg"
-      imageProvider = AssetImage('assets/avatars/$profilePicture');
+      imageProvider = NetworkImage('${ApiConstants.baseUrl}/static/avatars/$profilePicture');
     } else {
       // In case it's a relative path from backend, like "/media/..."
-      imageProvider = NetworkImage('http://127.0.0.1:8000$profilePicture');
+      imageProvider = NetworkImage('${ApiConstants.baseUrl}$profilePicture');
     }
 
     return CircleAvatar(

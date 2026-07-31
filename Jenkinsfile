@@ -2,73 +2,60 @@ pipeline {
     agent any
 
     environment {
-        // Assume Docker and kubectl are accessible.
-        // If Jenkins is on Windows but you want to build in WSL, we prefix commands with `wsl` or run natively if Jenkins is in WSL.
-        // For a native Linux Jenkins or Jenkins-in-Docker with host Docker socket, the below commands work normally.
-        BACKEND_IMAGE = "campuskart-backend:latest"
-        FRONTEND_IMAGE = "campuskart-frontend:latest"
+        CONTAINER_NAME = 'campuskart-backend'
+        IMAGE_NAME = 'campuskart-backend:latest'
+        PORT = '8000'
     }
 
     stages {
         stage('Checkout') {
             steps {
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('backend') {
+                    echo 'Building backend Docker image...'
+                    bat 'docker build -t %IMAGE_NAME% .'
+                }
+            }
+        }
+
+        stage('Stop and Remove Existing Container') {
+            steps {
+                echo 'Stopping and removing existing container if it exists...'
+                bat '''
+                docker stop %CONTAINER_NAME% >nul 2>&1 || exit 0
+                docker rm %CONTAINER_NAME% >nul 2>&1 || exit 0
+                '''
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                echo 'Starting new container...'
+                bat 'docker run -d -p %PORT%:8000 --name %CONTAINER_NAME% --network host %IMAGE_NAME%'
+            }
+        }
         
-        stage('Prepare Environment') {
+        stage('Verify Health') {
             steps {
-                script {
-                    bat '''
-                    echo "--- Checking WSL Distribution ---"
-                    wsl -l -v
-                    
-                    echo "--- Starting Minikube (if stopped) ---"
-                    wsl -- bash -c "minikube status || minikube start --driver=docker"
-                    
-                    echo "--- Checking Minikube & Docker Status ---"
-                    wsl -- bash -c "minikube status"
-                    wsl -- bash -c "docker --version"
-                    '''
-                }
+                echo 'Waiting for container to start...'
+                sleep 5
+                bat 'curl -f http://localhost:%PORT%/health || exit 1'
             }
         }
+    }
 
-        stage('Build Docker Images') {
-            steps {
-                script {
-                    bat '''
-                    echo "--- Building Backend ---"
-                    wsl -- bash -c "cd backend && minikube image build -t campuskart-backend:latest ."
-                    '''
-
-                    bat '''
-                    echo "--- Building Frontend ---"
-                    wsl -- bash -c "cd public-view && minikube image build -t campuskart-frontend:latest ."
-                    '''
-                }
-            }
+    post {
+        success {
+            echo 'Deployment successful!'
         }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                bat '''
-                echo "--- Applying K8s Manifests ---"
-                wsl -- kubectl apply -f k8s/mongodb.yaml
-                wsl -- kubectl apply -f k8s/backend.yaml
-                wsl -- kubectl apply -f k8s/frontend.yaml
-                '''
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                bat '''
-                echo "--- Fetching Pods and Services ---"
-                wsl -- kubectl get pods
-                wsl -- kubectl get svc
-                '''
-            }
+        failure {
+            echo 'Deployment failed!'
         }
     }
 }

@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.db import init_db
@@ -83,6 +84,9 @@ app.add_middleware(
 # ── Routers ────────────────────────────────────────────────────────────────────
 app.include_router(api_router,        prefix="/api/v1")
 app.include_router(websockets.router, prefix="/ws", tags=["websockets"])
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 # ── Health Checks ──────────────────────────────────────────────────────────────
