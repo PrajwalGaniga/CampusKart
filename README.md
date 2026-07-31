@@ -1,4 +1,5 @@
-# CampusPulse Backend (Version 1.0)
+## CampusPulse Backend (Version 1.0)
+backend + frontend
 
 A high-performance FastAPI backend for the CampusPulse application.
 
