@@ -26,6 +26,7 @@ class UserResponse(BaseModel):
     email: str
     role: str
     status: str
+    profile_picture: str = ""
     bio: str = ""
     friends_count: int = 0
     asks_count: int = 0

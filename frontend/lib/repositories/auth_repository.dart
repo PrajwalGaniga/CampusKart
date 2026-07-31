@@ -47,6 +47,14 @@ class AuthRepository {
     return user;
   }
 
+  User? getCachedUser() {
+    final data = _sharedPrefs.getUser();
+    if (data != null) {
+      return User.fromJson(data);
+    }
+    return null;
+  }
+
   Future<void> logout() async {
     await _secureStorage.clearAll();
     await _sharedPrefs.clearUser();

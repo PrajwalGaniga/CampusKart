@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/friend_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/app_theme.dart';
+import '../../widgets/user_avatar.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -64,6 +67,13 @@ class NotificationsScreen extends ConsumerWidget {
                 separatorBuilder: (_, i) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final notif = notifications[index];
+                  
+                  // Try to match friend request notification to a pending request
+                  final pendingRequests = ref.watch(pendingRequestsProvider).valueOrNull ?? [];
+                  final matchingRequest = notif.type == 'FRIEND_REQUEST' 
+                      ? pendingRequests.where((r) => notif.message.startsWith(r.display_name)).firstOrNull
+                      : null;
+                  
                   return Container(
                     decoration: BoxDecoration(
                       color: AppColors.surface,
@@ -101,23 +111,25 @@ class NotificationsScreen extends ConsumerWidget {
                                 top: 4,
                                 bottom: 4,
                               ),
-                              leading: Container(
-                                width: 42,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  color: notif.is_read
-                                      ? Colors.grey.withValues(alpha: 0.1)
-                                      : AppColors.primary.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.notifications_rounded,
-                                  color: notif.is_read
-                                      ? AppColors.textHint
-                                      : AppColors.primary,
-                                  size: 22,
-                                ),
-                              ),
+                              leading: matchingRequest != null 
+                                  ? UserAvatar(profilePicture: matchingRequest.profile_image, radius: 21)
+                                  : Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: notif.is_read
+                                            ? Colors.grey.withValues(alpha: 0.1)
+                                            : AppColors.primary.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.notifications_rounded,
+                                        color: notif.is_read
+                                            ? AppColors.textHint
+                                            : AppColors.primary,
+                                        size: 22,
+                                      ),
+                                    ),
                               title: Text(
                                 notif.title,
                                 style: TextStyle(
@@ -138,18 +150,63 @@ class NotificationsScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                              trailing: notif.is_read
-                                  ? null
-                                  : IconButton(
-                                      icon: const Icon(
-                                        Icons.check_circle_rounded,
-                                        color: AppColors.primary,
-                                        size: 22,
-                                      ),
-                                      onPressed: () => ref
-                                          .read(notificationsProvider.notifier)
-                                          .markAsRead(notif.id),
-                                    ),
+                              trailing: Builder(
+                                builder: (context) {
+                                  if (notif.type == 'FRIEND_REQUEST') {
+                                    
+                                    if (matchingRequest != null) {
+                                      return Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
+                                            onPressed: () async {
+                                              await ref.read(pendingRequestsProvider.notifier).acceptRequest(matchingRequest.request_id);
+                                              ref.read(friendsProvider.notifier).fetchFriends();
+                                              ref.read(authProvider.notifier).checkAuth(); // Refresh friend count
+                                              ref.read(notificationsProvider.notifier).markAsRead(notif.id);
+                                            },
+                                            style: IconButton.styleFrom(
+                                              backgroundColor: AppColors.success,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          IconButton(
+                                            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                                            onPressed: () async {
+                                              await ref.read(pendingRequestsProvider.notifier).rejectRequest(matchingRequest.request_id);
+                                              ref.read(notificationsProvider.notifier).markAsRead(notif.id);
+                                            },
+                                            style: IconButton.styleFrom(
+                                              backgroundColor: AppColors.error,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    } else {
+                                      return notif.is_read ? const SizedBox.shrink() : IconButton(
+                                        icon: const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
+                                        onPressed: () => ref.read(notificationsProvider.notifier).markAsRead(notif.id),
+                                      );
+                                    }
+                                  }
+                                  
+                                  return notif.is_read
+                                      ? const SizedBox.shrink()
+                                      : IconButton(
+                                          icon: const Icon(
+                                            Icons.check_circle_rounded,
+                                            color: AppColors.primary,
+                                            size: 22,
+                                          ),
+                                          onPressed: () => ref
+                                              .read(notificationsProvider.notifier)
+                                              .markAsRead(notif.id),
+                                        );
+                                },
+                              ),
                             ),
                           ),
                         ],

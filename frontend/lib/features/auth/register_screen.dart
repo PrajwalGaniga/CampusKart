@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/app_theme.dart';
+import '../../widgets/avatar_picker.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -23,6 +24,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  String _selectedAvatar = '2.jpg';
 
   @override
   void dispose() {
@@ -59,6 +61,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'department': _deptController.text.trim(),
       'year': int.tryParse(_yearController.text) ?? 1,
       'section': _sectionController.text.trim(),
+      'profile_picture': _selectedAvatar,
     };
 
     setState(() => _isLoading = true);
@@ -150,7 +153,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
+                      
+                      AvatarPicker(
+                        initialAvatar: _selectedAvatar,
+                        onAvatarSelected: (avatar) {
+                          setState(() {
+                            _selectedAvatar = avatar;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 24),
 
                       _buildSectionLabel('Account Info'),
                       const SizedBox(height: 12),

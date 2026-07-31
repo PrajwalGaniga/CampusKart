@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/feed_provider.dart';
 import '../../models/ask.dart';
 import '../../core/app_theme.dart';
+import '../../widgets/user_avatar.dart';
 
 class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
@@ -235,6 +236,43 @@ class _AskCard extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      if (isMyAsk) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 20),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Delete Ask'),
+                                content: const Text('Are you sure you want to delete this ask?'),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true), 
+                                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              try {
+                                await ref.read(myAsksProvider.notifier).deleteAsk(ask.id);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ask deleted')));
+                                }
+                              } catch(e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -460,26 +498,9 @@ class _RepliesList extends ConsumerWidget {
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        leading: CircleAvatar(
+                        leading: UserAvatar(
+                          profilePicture: reply.responder_image,
                           radius: 22,
-                          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
-                          backgroundImage: reply.responder_image.isNotEmpty
-                              ? NetworkImage(
-                                  reply.responder_image.startsWith('http')
-                                      ? reply.responder_image
-                                      : 'http://127.0.0.1:8000${reply.responder_image}',
-                                )
-                              : null,
-                          onBackgroundImageError: reply.responder_image.isNotEmpty ? (error, stackTrace) {} : null,
-                          child: reply.responder_image.isEmpty
-                              ? Text(
-                                  reply.responder_name.isNotEmpty ? reply.responder_name[0].toUpperCase() : '?',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                )
-                              : null,
                         ),
                         title: Text(
                           reply.responder_name,

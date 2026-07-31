@@ -14,7 +14,6 @@ class FriendsNotifier extends StateNotifier<AsyncValue<List<FriendResponse>>> {
   }
 
   Future<void> fetchFriends() async {
-    state = const AsyncValue.loading();
     try {
       final friends = await _repository.getFriends();
       state = AsyncValue.data(friends);
@@ -47,7 +46,6 @@ class PendingRequestsNotifier extends StateNotifier<AsyncValue<List<PendingReque
   }
 
   Future<void> fetchPendingRequests() async {
-    state = const AsyncValue.loading();
     try {
       final requests = await _repository.getPendingRequests();
       state = AsyncValue.data(requests);

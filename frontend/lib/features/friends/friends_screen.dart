@@ -3,7 +3,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/friend_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../repositories/friend_repository.dart';
+import '../../widgets/user_avatar.dart';
 import '../../models/friend.dart';
 import '../../core/app_theme.dart';
 
@@ -134,10 +136,20 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     return friendsState.when(
       data: (friends) {
         if (friends.isEmpty) {
-          return const _EmptyFriends(
-            icon: Icons.people_outline_rounded,
-            title: 'No friends yet',
-            subtitle: 'Search and add friends in the Requests tab',
+          return RefreshIndicator(
+            onRefresh: () => ref.read(friendsProvider.notifier).fetchFriends(),
+            color: AppColors.primary,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: const _EmptyFriends(
+                  icon: Icons.people_outline_rounded,
+                  title: 'No friends yet',
+                  subtitle: 'Search and add friends in the Requests tab',
+                ),
+              ),
+            ),
           );
         }
         return RefreshIndicator(
@@ -153,7 +165,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 decoration: cardDecoration(),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  leading: _Avatar(name: friend.display_name),
+                  leading: UserAvatar(profilePicture: friend.profile_image),
                   title: Text(
                     friend.display_name,
                     style: const TextStyle(
@@ -266,7 +278,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           decoration: cardDecoration(),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            leading: _Avatar(name: user.display_name),
+            leading: UserAvatar(profilePicture: user.profile_image),
             title: Text(
               user.display_name,
               style: const TextStyle(
@@ -335,10 +347,20 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     return requestsState.when(
       data: (requests) {
         if (requests.isEmpty) {
-          return const _EmptyFriends(
-            icon: Icons.inbox_outlined,
-            title: 'No pending requests',
-            subtitle: 'Friend requests will appear here',
+          return RefreshIndicator(
+            onRefresh: () => ref.read(pendingRequestsProvider.notifier).fetchPendingRequests(),
+            color: AppColors.primary,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: const _EmptyFriends(
+                  icon: Icons.inbox_outlined,
+                  title: 'No pending requests',
+                  subtitle: 'Friend requests will appear here',
+                ),
+              ),
+            ),
           );
         }
         return RefreshIndicator(
@@ -354,7 +376,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 decoration: cardDecoration(),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  leading: _Avatar(name: req.display_name),
+                  leading: UserAvatar(profilePicture: req.profile_image),
                   title: Text(
                     req.display_name,
                     style: const TextStyle(
@@ -375,6 +397,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         onPressed: () async {
                               await ref.read(pendingRequestsProvider.notifier).acceptRequest(req.request_id);
                               ref.read(friendsProvider.notifier).fetchFriends();
+                              ref.read(authProvider.notifier).checkAuth(); // Refresh friend count
                             },
                         style: IconButton.styleFrom(
                           backgroundColor: AppColors.success,
@@ -406,27 +429,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-class _Avatar extends StatelessWidget {
-  final String name;
-  const _Avatar({required this.name});
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 24,
-      backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: const TextStyle(
-          color: AppColors.primary,
-          fontWeight: FontWeight.w800,
-          fontSize: 18,
-        ),
-      ),
-    );
-  }
-}
 
 class _StatusChip extends StatelessWidget {
   final String label;

@@ -50,4 +50,8 @@ class FeedRepository {
       data: {'reply_id': replyId},
     );
   }
+
+  Future<void> deleteAsk(String askId) async {
+    await _dio.delete(ApiConstants.deleteAsk(askId));
+  }
 }

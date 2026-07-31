@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity, LayoutDashboard, Network, Database } from 'lucide-react';
 import styles from './ControlCenterLayout.module.css';
+import { WS_BASE_URL } from '../../config';
 
 interface Props {
   children: React.ReactNode;
@@ -24,7 +25,7 @@ export default function ControlCenterLayout({ children }: Props) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--accent-success)' }} />
-            Connected to wss://campuspulse.internal
+            Connected to {WS_BASE_URL}
           </div>
         </header>
         

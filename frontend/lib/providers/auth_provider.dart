@@ -1,23 +1,43 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../models/user.dart';
 import '../repositories/auth_repository.dart';
+import 'feed_provider.dart';
+import 'friend_provider.dart';
+import 'notification_provider.dart';
+import 'activity_provider.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<User?>>((ref) {
-  return AuthNotifier(ref.watch(authRepositoryProvider));
+  return AuthNotifier(ref, ref.watch(authRepositoryProvider));
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
+  final Ref _ref;
   final AuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(const AsyncValue.data(null));
+  AuthNotifier(this._ref, this._repository) : super(AsyncValue.data(_repository.getCachedUser()));
+
+  void _invalidateAll() {
+    _ref.invalidate(feedProvider);
+    _ref.invalidate(myAsksProvider);
+    _ref.invalidate(friendsProvider);
+    _ref.invalidate(pendingRequestsProvider);
+    _ref.invalidate(notificationsProvider);
+    _ref.invalidate(activityProvider);
+  }
 
   Future<void> checkAuth() async {
+    final prevUser = state.value;
     state = const AsyncValue.loading();
     try {
       final user = await _repository.fetchMe();
       state = AsyncValue.data(user);
     } catch (e, _) {
-      state = AsyncValue.data(null);
+      if (e is DioException && e.response?.statusCode == 401) {
+        state = const AsyncValue.data(null);
+      } else {
+        state = AsyncValue.data(prevUser ?? _repository.getCachedUser());
+      }
     }
   }
 
@@ -25,6 +45,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     state = const AsyncValue.loading();
     try {
       final user = await _repository.login(username, password);
+      _invalidateAll();
       state = AsyncValue.data(user);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace); // stackTrace used intentionally
@@ -45,6 +66,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
 
   Future<void> logout() async {
     await _repository.logout();
+    _invalidateAll();
     state = const AsyncValue.data(null);
   }
 

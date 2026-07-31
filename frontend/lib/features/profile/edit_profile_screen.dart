@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/app_theme.dart';
+import '../../widgets/avatar_picker.dart';
 import 'package:dio/dio.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -15,7 +16,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _displayNameController = TextEditingController();
   final _bioController = TextEditingController();
-  final _profilePictureController = TextEditingController();
+  String _selectedAvatar = '2.jpg';
   bool _isSaving = false;
 
   @override
@@ -25,7 +26,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (user != null) {
       _displayNameController.text = user.display_name;
       _bioController.text = user.bio;
-      _profilePictureController.text = user.profile_picture ?? '';
+      _selectedAvatar = user.profile_picture?.isNotEmpty == true ? user.profile_picture! : '2.jpg';
     }
   }
 
@@ -33,7 +34,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void dispose() {
     _displayNameController.dispose();
     _bioController.dispose();
-    _profilePictureController.dispose();
     super.dispose();
   }
 
@@ -43,7 +43,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await ref.read(authProvider.notifier).updateProfile({
         'display_name': _displayNameController.text.trim(),
         'bio': _bioController.text.trim(),
-        'profile_picture': _profilePictureController.text.trim(),
+        'profile_picture': _selectedAvatar,
       });
       
       if (mounted) {
@@ -117,13 +117,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _profilePictureController,
-              decoration: InputDecoration(
-                labelText: 'Profile Picture URL (Optional)',
-                prefixIcon: const Icon(Icons.image_outlined),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            const Text(
+              'Avatar',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
+            ),
+            const SizedBox(height: 16),
+            AvatarPicker(
+              initialAvatar: _selectedAvatar,
+              onAvatarSelected: (avatar) {
+                setState(() {
+                  _selectedAvatar = avatar;
+                });
+              },
             ),
             const SizedBox(height: 32),
             SizedBox(

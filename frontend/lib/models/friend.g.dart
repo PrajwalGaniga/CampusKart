@@ -11,7 +11,7 @@ _UserSearchResponse _$UserSearchResponseFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       username: json['username'] as String,
       display_name: json['display_name'] as String,
-      profile_image: json['profile_image'] as String,
+      profile_image: json['profile_image'] as String? ?? '',
       status: json['status'] as String,
       friendship_status: json['friendship_status'] as String? ?? 'NONE',
     );
@@ -32,7 +32,7 @@ _PendingRequestResponse _$PendingRequestResponseFromJson(
   request_id: json['request_id'] as String,
   username: json['username'] as String,
   display_name: json['display_name'] as String,
-  profile_image: json['profile_image'] as String,
+  profile_image: json['profile_image'] as String? ?? '',
   created_at: json['created_at'] as String,
 );
 
@@ -51,6 +51,7 @@ _FriendResponse _$FriendResponseFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       username: json['username'] as String,
       display_name: json['display_name'] as String,
+      profile_image: json['profile_image'] as String? ?? '',
       status: json['status'] as String,
       friends_since: json['friends_since'] as String,
     );
@@ -60,6 +61,7 @@ Map<String, dynamic> _$FriendResponseToJson(_FriendResponse instance) =>
       'id': instance.id,
       'username': instance.username,
       'display_name': instance.display_name,
+      'profile_image': instance.profile_image,
       'status': instance.status,
       'friends_since': instance.friends_since,
     };

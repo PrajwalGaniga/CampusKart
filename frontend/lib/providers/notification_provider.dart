@@ -14,7 +14,6 @@ class NotificationsNotifier extends StateNotifier<AsyncValue<List<AppNotificatio
   }
 
   Future<void> fetchNotifications() async {
-    state = const AsyncValue.loading();
     try {
       final notifications = await _repository.getNotifications();
       state = AsyncValue.data(notifications);

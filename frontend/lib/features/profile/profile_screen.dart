@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/app_theme.dart';
+import '../../widgets/user_avatar.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -80,17 +81,10 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            child: user.profile_picture != null && user.profile_picture!.isNotEmpty
-                                ? ClipOval(
-                                    child: Image.network(
-                                      user.profile_picture!.startsWith('http')
-                                          ? user.profile_picture!
-                                          : 'http://127.0.0.1:8000${user.profile_picture!}',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => _avatarIcon(user.display_name),
-                                    ),
-                                  )
-                                : _avatarIcon(user.display_name),
+                            child: UserAvatar(
+                              profilePicture: user.profile_picture,
+                              radius: 48,
+                            ),
                           ),
                         ],
                       ),
@@ -242,19 +236,6 @@ class ProfileScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Error: $error')),
-      ),
-    );
-  }
-
-  Widget _avatarIcon(String name) {
-    return Center(
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 40,
-          fontWeight: FontWeight.w800,
-        ),
       ),
     );
   }

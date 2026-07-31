@@ -21,6 +21,7 @@ class ApiConstants {
   static String askReplies(String id) => '/api/v1/asks/$id/replies';
   static String askReply(String id) => '/api/v1/asks/$id/reply';
   static String askResolve(String id) => '/api/v1/asks/$id/resolve';
+  static String deleteAsk(String id) => '/api/v1/asks/$id';
 
   static const String friends = '/api/v1/friends/';
   static const String friendRequests = '/api/v1/friends/request';

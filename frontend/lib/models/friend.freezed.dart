@@ -214,13 +214,13 @@ return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_
 @JsonSerializable()
 
 class _UserSearchResponse implements UserSearchResponse {
-  const _UserSearchResponse({required this.id, required this.username, required this.display_name, required this.profile_image, required this.status, this.friendship_status = 'NONE'});
+  const _UserSearchResponse({required this.id, required this.username, required this.display_name, this.profile_image = '', required this.status, this.friendship_status = 'NONE'});
   factory _UserSearchResponse.fromJson(Map<String, dynamic> json) => _$UserSearchResponseFromJson(json);
 
 @override final  String id;
 @override final  String username;
 @override final  String display_name;
-@override final  String profile_image;
+@override@JsonKey() final  String profile_image;
 @override final  String status;
 @override@JsonKey() final  String friendship_status;
 
@@ -491,13 +491,13 @@ return $default(_that.request_id,_that.username,_that.display_name,_that.profile
 @JsonSerializable()
 
 class _PendingRequestResponse implements PendingRequestResponse {
-  const _PendingRequestResponse({required this.request_id, required this.username, required this.display_name, required this.profile_image, required this.created_at});
+  const _PendingRequestResponse({required this.request_id, required this.username, required this.display_name, this.profile_image = '', required this.created_at});
   factory _PendingRequestResponse.fromJson(Map<String, dynamic> json) => _$PendingRequestResponseFromJson(json);
 
 @override final  String request_id;
 @override final  String username;
 @override final  String display_name;
-@override final  String profile_image;
+@override@JsonKey() final  String profile_image;
 @override final  String created_at;
 
 /// Create a copy of PendingRequestResponse
@@ -568,7 +568,7 @@ as String,
 /// @nodoc
 mixin _$FriendResponse {
 
- String get id; String get username; String get display_name; String get status; String get friends_since;
+ String get id; String get username; String get display_name; String get profile_image; String get status; String get friends_since;
 /// Create a copy of FriendResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -581,16 +581,16 @@ $FriendResponseCopyWith<FriendResponse> get copyWith => _$FriendResponseCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FriendResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.status, status) || other.status == status)&&(identical(other.friends_since, friends_since) || other.friends_since == friends_since));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FriendResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.profile_image, profile_image) || other.profile_image == profile_image)&&(identical(other.status, status) || other.status == status)&&(identical(other.friends_since, friends_since) || other.friends_since == friends_since));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,display_name,status,friends_since);
+int get hashCode => Object.hash(runtimeType,id,username,display_name,profile_image,status,friends_since);
 
 @override
 String toString() {
-  return 'FriendResponse(id: $id, username: $username, display_name: $display_name, status: $status, friends_since: $friends_since)';
+  return 'FriendResponse(id: $id, username: $username, display_name: $display_name, profile_image: $profile_image, status: $status, friends_since: $friends_since)';
 }
 
 
@@ -601,7 +601,7 @@ abstract mixin class $FriendResponseCopyWith<$Res>  {
   factory $FriendResponseCopyWith(FriendResponse value, $Res Function(FriendResponse) _then) = _$FriendResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String username, String display_name, String status, String friends_since
+ String id, String username, String display_name, String profile_image, String status, String friends_since
 });
 
 
@@ -618,11 +618,12 @@ class _$FriendResponseCopyWithImpl<$Res>
 
 /// Create a copy of FriendResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? status = null,Object? friends_since = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? profile_image = null,Object? status = null,Object? friends_since = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,display_name: null == display_name ? _self.display_name : display_name // ignore: cast_nullable_to_non_nullable
+as String,profile_image: null == profile_image ? _self.profile_image : profile_image // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,friends_since: null == friends_since ? _self.friends_since : friends_since // ignore: cast_nullable_to_non_nullable
 as String,
@@ -710,10 +711,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String status,  String friends_since)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String profile_image,  String status,  String friends_since)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FriendResponse() when $default != null:
-return $default(_that.id,_that.username,_that.display_name,_that.status,_that.friends_since);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status,_that.friends_since);case _:
   return orElse();
 
 }
@@ -731,10 +732,10 @@ return $default(_that.id,_that.username,_that.display_name,_that.status,_that.fr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String status,  String friends_since)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String profile_image,  String status,  String friends_since)  $default,) {final _that = this;
 switch (_that) {
 case _FriendResponse():
-return $default(_that.id,_that.username,_that.display_name,_that.status,_that.friends_since);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status,_that.friends_since);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -751,10 +752,10 @@ return $default(_that.id,_that.username,_that.display_name,_that.status,_that.fr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String username,  String display_name,  String status,  String friends_since)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String username,  String display_name,  String profile_image,  String status,  String friends_since)?  $default,) {final _that = this;
 switch (_that) {
 case _FriendResponse() when $default != null:
-return $default(_that.id,_that.username,_that.display_name,_that.status,_that.friends_since);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status,_that.friends_since);case _:
   return null;
 
 }
@@ -766,12 +767,13 @@ return $default(_that.id,_that.username,_that.display_name,_that.status,_that.fr
 @JsonSerializable()
 
 class _FriendResponse implements FriendResponse {
-  const _FriendResponse({required this.id, required this.username, required this.display_name, required this.status, required this.friends_since});
+  const _FriendResponse({required this.id, required this.username, required this.display_name, this.profile_image = '', required this.status, required this.friends_since});
   factory _FriendResponse.fromJson(Map<String, dynamic> json) => _$FriendResponseFromJson(json);
 
 @override final  String id;
 @override final  String username;
 @override final  String display_name;
+@override@JsonKey() final  String profile_image;
 @override final  String status;
 @override final  String friends_since;
 
@@ -788,16 +790,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FriendResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.status, status) || other.status == status)&&(identical(other.friends_since, friends_since) || other.friends_since == friends_since));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FriendResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.profile_image, profile_image) || other.profile_image == profile_image)&&(identical(other.status, status) || other.status == status)&&(identical(other.friends_since, friends_since) || other.friends_since == friends_since));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,display_name,status,friends_since);
+int get hashCode => Object.hash(runtimeType,id,username,display_name,profile_image,status,friends_since);
 
 @override
 String toString() {
-  return 'FriendResponse(id: $id, username: $username, display_name: $display_name, status: $status, friends_since: $friends_since)';
+  return 'FriendResponse(id: $id, username: $username, display_name: $display_name, profile_image: $profile_image, status: $status, friends_since: $friends_since)';
 }
 
 
@@ -808,7 +810,7 @@ abstract mixin class _$FriendResponseCopyWith<$Res> implements $FriendResponseCo
   factory _$FriendResponseCopyWith(_FriendResponse value, $Res Function(_FriendResponse) _then) = __$FriendResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String username, String display_name, String status, String friends_since
+ String id, String username, String display_name, String profile_image, String status, String friends_since
 });
 
 
@@ -825,11 +827,12 @@ class __$FriendResponseCopyWithImpl<$Res>
 
 /// Create a copy of FriendResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? status = null,Object? friends_since = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? profile_image = null,Object? status = null,Object? friends_since = null,}) {
   return _then(_FriendResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,display_name: null == display_name ? _self.display_name : display_name // ignore: cast_nullable_to_non_nullable
+as String,profile_image: null == profile_image ? _self.profile_image : profile_image // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,friends_since: null == friends_since ? _self.friends_since : friends_since // ignore: cast_nullable_to_non_nullable
 as String,

@@ -14,7 +14,6 @@ class ActivityNotifier extends StateNotifier<AsyncValue<List<ActivityLog>>> {
   }
 
   Future<void> fetchActivityLogs() async {
-    state = const AsyncValue.loading();
     try {
       final logs = await _repository.getActivityLogs();
       state = AsyncValue.data(logs);

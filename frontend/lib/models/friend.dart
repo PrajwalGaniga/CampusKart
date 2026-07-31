@@ -10,7 +10,7 @@ abstract class UserSearchResponse with _$UserSearchResponse {
     required String id,
     required String username,
     required String display_name,
-    required String profile_image,
+    @Default('') String profile_image,
     required String status,
     @Default('NONE') String friendship_status,
   }) = _UserSearchResponse;
@@ -24,7 +24,7 @@ abstract class PendingRequestResponse with _$PendingRequestResponse {
     required String request_id,
     required String username,
     required String display_name,
-    required String profile_image,
+    @Default('') String profile_image,
     required String created_at,
   }) = _PendingRequestResponse;
 
@@ -37,6 +37,7 @@ abstract class FriendResponse with _$FriendResponse {
     required String id,
     required String username,
     required String display_name,
+    @Default('') String profile_image,
     required String status,
     required String friends_since,
   }) = _FriendResponse;

@@ -15,7 +15,6 @@ class FeedNotifier extends StateNotifier<AsyncValue<List<Ask>>> {
   }
 
   Future<void> fetchFeed() async {
-    state = const AsyncValue.loading();
     try {
       final feed = await _repository.getFeed();
       state = AsyncValue.data(feed);
@@ -90,7 +89,6 @@ class MyAsksNotifier extends StateNotifier<AsyncValue<List<Ask>>> {
   }
 
   Future<void> fetchMyAsks() async {
-    state = const AsyncValue.loading();
     try {
       final asks = await _repository.getMyAsks();
       state = AsyncValue.data(asks);
@@ -104,6 +102,19 @@ class MyAsksNotifier extends StateNotifier<AsyncValue<List<Ask>>> {
       final ask = await _repository.createAsk(data);
       if (state.hasValue) {
         state = AsyncValue.data([ask, ...state.value!]);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAsk(String askId) async {
+    try {
+      await _repository.deleteAsk(askId);
+      if (state.hasValue) {
+        state = AsyncValue.data(
+          state.value!.where((a) => a.id != askId).toList(),
+        );
       }
     } catch (e) {
       rethrow;

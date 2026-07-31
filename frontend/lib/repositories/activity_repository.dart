@@ -15,7 +15,7 @@ class ActivityRepository {
 
   Future<List<ActivityLog>> getActivityLogs() async {
     try {
-      final response = await _dio.get('/activity/');
+      final response = await _dio.get('/api/v1/activity/');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => ActivityLog.fromJson(json)).toList();
