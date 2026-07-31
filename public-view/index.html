@@ -7,6 +7,19 @@
     <title>public-view</title>
   </head>
   <body>
+    <div id="error-overlay" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; padding:20px; background:red; color:white; font-family:monospace; white-space:pre-wrap;"></div>
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        var el = document.getElementById('error-overlay');
+        el.style.display = 'block';
+        el.innerText = 'Runtime Error: ' + msg + '\n' + (error ? error.stack : '');
+      };
+      window.onunhandledrejection = function(event) {
+        var el = document.getElementById('error-overlay');
+        el.style.display = 'block';
+        el.innerText = 'Unhandled Promise Rejection: ' + event.reason;
+      };
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

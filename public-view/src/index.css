@@ -1,24 +1,9 @@
-:root {
-  --bg-main: #0a0a0a;
-  --bg-card: #141414;
-  --bg-card-hover: #1f1f1f;
-  --text-primary: #ededed;
-  --text-secondary: #a1a1aa;
-  --accent-color: #0070f3;
-  --accent-success: #10b981;
-  --accent-warning: #f5a623;
-  --accent-danger: #ef4444;
-  --border-color: #27272a;
-  
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
+  background-color: #F5F7FA;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -27,7 +12,7 @@ body {
   box-sizing: border-box;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Remove default margins/paddings from headings and lists */
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
 }
