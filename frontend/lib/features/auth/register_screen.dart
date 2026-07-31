@@ -58,9 +58,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'display_name': _displayNameController.text.trim(),
       'email': _emailController.text.trim(),
       'password': _passwordController.text,
-      'department': _deptController.text.trim(),
-      'year': int.tryParse(_yearController.text) ?? 1,
-      'section': _sectionController.text.trim(),
+      'department': '',
+      'year': 1,
+      'section': '',
       'profile_picture': _selectedAvatar,
     };
 
@@ -222,38 +222,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      _buildSectionLabel('Academic Info'),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: _buildField(
-                              controller: _deptController,
-                              hint: 'Department',
-                              icon: Icons.school_outlined,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildField(
-                              controller: _yearController,
-                              hint: 'Year',
-                              icon: Icons.calendar_today_outlined,
-                              keyboard: TextInputType.number,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildField(
-                              controller: _sectionController,
-                              hint: 'Sec',
-                              icon: Icons.groups_outlined,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
+
 
                       _RegisterButton(isLoading: _isLoading, onPressed: _register),
                       const SizedBox(height: 16),
