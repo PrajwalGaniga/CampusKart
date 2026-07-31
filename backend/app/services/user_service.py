@@ -52,6 +52,7 @@ async def _map_to_response(user: User) -> UserResponse:
         role=user.role,
         status=user.status,
         bio=user.bio,
+        profile_picture=user.profile_picture,
         friends_count=user.friends_count,
         asks_count=asks_count,
         helps_count=helps_count

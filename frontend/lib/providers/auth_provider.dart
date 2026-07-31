@@ -48,7 +48,12 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       _invalidateAll();
       state = AsyncValue.data(user);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace); // stackTrace used intentionally
+      if (e is DioException && e.response?.data != null) {
+        final detail = e.response?.data['detail'] ?? e.message;
+        state = AsyncValue.error(detail, stackTrace);
+      } else {
+        state = AsyncValue.error(e, stackTrace);
+      }
     }
   }
 
@@ -60,7 +65,12 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       // Usually, we just login automatically, but let's assume the user has to login
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace); // stackTrace used intentionally
+      if (e is DioException && e.response?.data != null) {
+        final detail = e.response?.data['detail'] ?? e.message;
+        state = AsyncValue.error(detail, stackTrace);
+      } else {
+        state = AsyncValue.error(e, stackTrace);
+      }
     }
   }
 
@@ -77,7 +87,11 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       final user = await _repository.updateProfile(data);
       state = AsyncValue.data(user);
     } catch (e, _) {
-      state = prevState; // Revert
+      if (e is DioException && e.response?.data != null) {
+        final detail = e.response?.data['detail'] ?? e.message;
+        throw Exception(detail);
+      }
+      throw Exception(e.toString());
     }
   }
 
