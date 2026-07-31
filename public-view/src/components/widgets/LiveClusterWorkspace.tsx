@@ -35,7 +35,7 @@ export default function LiveClusterWorkspace({ activeClusters, users }: LiveClus
             style={{ transform: `scale(${scale})` }}
           >
             <AnimatePresence>
-              {clusters.map(([askId, cluster], i) => {
+              {clusters.map(([askId, cluster]) => {
                 const askerUser = getUser(cluster.asker);
                 
                 return (

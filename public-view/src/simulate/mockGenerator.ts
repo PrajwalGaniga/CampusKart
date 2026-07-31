@@ -1,18 +1,5 @@
 import { PulseEvent, UserStatus, DashboardMetrics, SystemHealth } from '../types';
 
-const MOCK_USERS = [
-  { id: 'u1', name: 'Prajwal G', username: 'prajwal', isOnline: true },
-  { id: 'u2', name: 'Amrita R', username: 'amrita', isOnline: true },
-  { id: 'u3', name: 'Pavithra S', username: 'pavithra', isOnline: true },
-  { id: 'u4', name: 'Kiran M', username: 'kiran', isOnline: false },
-  { id: 'u5', name: 'Arjun K', username: 'arjun', isOnline: true },
-  { id: 'u6', name: 'Sneha L', username: 'sneha', isOnline: true },
-  { id: 'u7', name: 'Vikram D', username: 'vikram', isOnline: false },
-  { id: 'u8', name: 'Anjali P', username: 'anjali', isOnline: true },
-  { id: 'u9', name: 'Rahul V', username: 'rahul', isOnline: true },
-  { id: 'u10', name: 'Neha B', username: 'neha', isOnline: false }
-];
-
 export const getMockUsers = (): UserStatus[] => {
   const avatars = [
     '/avatars/1.jpg',

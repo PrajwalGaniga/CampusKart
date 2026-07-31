@@ -99,7 +99,7 @@ export function useDashboardData(isSimulationEnabled: boolean) {
       const interval = setInterval(fetchLive, 10000);
       return () => clearInterval(interval);
     }
-  }, [isSimulationEnabled, handleEvent, wsStatus]);
+  }, [isSimulationEnabled, handleEvent, wsStatus, users.length, simulator]);
 
   // Compute Active Clusters dynamically from events
   const activeClusters = useMemo(() => {

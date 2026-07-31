@@ -54,6 +54,7 @@ export function useWebSocket(
         setStatus('error');
       };
     } catch (err) {
+      console.error(err);
       setStatus('error');
     }
   }, [isSimulationEnabled, onEvent]);

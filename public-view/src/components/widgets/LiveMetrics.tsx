@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardMetrics } from '../../types';
-import { Users, UserCheck, MessageSquare, CheckCircle, Activity, Clock } from 'lucide-react';
+import { Users, MessageSquare, CheckCircle, Activity } from 'lucide-react';
 import styles from '../../pages/Dashboard.module.css';
 
 interface LiveMetricsProps {

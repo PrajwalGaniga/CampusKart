@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Database, Server, Clock, Sun, Moon } from 'lucide-react';
+import { Activity, Database, Server, Clock } from 'lucide-react';
 import { SystemHealth } from '../../types';
 import styles from '../../pages/Dashboard.module.css';
 
