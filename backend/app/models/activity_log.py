@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
-from beanie import Document
-import pymongo
-from pymongo import IndexModel, ASCENDING
+from beanie import Document # pyright: ignore[reportMissingImports]
+import pymongo # pyright: ignore[reportMissingImports]
+from pymongo import IndexModel, ASCENDING # pyright: ignore[reportMissingImports]
 from pydantic import Field
 
 def utc_now():
