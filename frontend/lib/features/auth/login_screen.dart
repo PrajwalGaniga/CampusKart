@@ -13,22 +13,32 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   void _login() async {
+    if (_isLoading) return;
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    
+    try {
 
     await ref.read(authProvider.notifier).login(
       _usernameController.text,
       _passwordController.text,
     );
-    
-    final state = ref.read(authProvider);
-    if (!state.hasError && state.value != null && mounted) {
-      context.go('/home');
-    } else if (state.hasError && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Failed')),
-      );
+      final state = ref.read(authProvider);
+      if (!state.hasError && state.value != null && mounted) {
+        context.go('/home');
+      } else if (state.hasError && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Failed')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -58,8 +68,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: authState.isLoading ? null : _login,
-                child: authState.isLoading 
+                onPressed: _isLoading ? null : _login,
+                child: _isLoading 
                     ? const CircularProgressIndicator() 
                     : const Text('Login'),
               ),

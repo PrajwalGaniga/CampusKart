@@ -314,7 +314,7 @@ as String,
 /// @nodoc
 mixin _$Reply {
 
- String get id; String get ask_id; String get responder_id; String get responder_name; String get responder_image; String get message; String get created_at;
+ String get id; String get ask_id; String get responder_id; String get responder_name; String get responder_image; String get message; int? get arrival_eta_minutes; String? get estimated_arrival_time; String get created_at;
 /// Create a copy of Reply
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -327,16 +327,16 @@ $ReplyCopyWith<Reply> get copyWith => _$ReplyCopyWithImpl<Reply>(this as Reply, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Reply&&(identical(other.id, id) || other.id == id)&&(identical(other.ask_id, ask_id) || other.ask_id == ask_id)&&(identical(other.responder_id, responder_id) || other.responder_id == responder_id)&&(identical(other.responder_name, responder_name) || other.responder_name == responder_name)&&(identical(other.responder_image, responder_image) || other.responder_image == responder_image)&&(identical(other.message, message) || other.message == message)&&(identical(other.created_at, created_at) || other.created_at == created_at));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Reply&&(identical(other.id, id) || other.id == id)&&(identical(other.ask_id, ask_id) || other.ask_id == ask_id)&&(identical(other.responder_id, responder_id) || other.responder_id == responder_id)&&(identical(other.responder_name, responder_name) || other.responder_name == responder_name)&&(identical(other.responder_image, responder_image) || other.responder_image == responder_image)&&(identical(other.message, message) || other.message == message)&&(identical(other.arrival_eta_minutes, arrival_eta_minutes) || other.arrival_eta_minutes == arrival_eta_minutes)&&(identical(other.estimated_arrival_time, estimated_arrival_time) || other.estimated_arrival_time == estimated_arrival_time)&&(identical(other.created_at, created_at) || other.created_at == created_at));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,ask_id,responder_id,responder_name,responder_image,message,created_at);
+int get hashCode => Object.hash(runtimeType,id,ask_id,responder_id,responder_name,responder_image,message,arrival_eta_minutes,estimated_arrival_time,created_at);
 
 @override
 String toString() {
-  return 'Reply(id: $id, ask_id: $ask_id, responder_id: $responder_id, responder_name: $responder_name, responder_image: $responder_image, message: $message, created_at: $created_at)';
+  return 'Reply(id: $id, ask_id: $ask_id, responder_id: $responder_id, responder_name: $responder_name, responder_image: $responder_image, message: $message, arrival_eta_minutes: $arrival_eta_minutes, estimated_arrival_time: $estimated_arrival_time, created_at: $created_at)';
 }
 
 
@@ -347,7 +347,7 @@ abstract mixin class $ReplyCopyWith<$Res>  {
   factory $ReplyCopyWith(Reply value, $Res Function(Reply) _then) = _$ReplyCopyWithImpl;
 @useResult
 $Res call({
- String id, String ask_id, String responder_id, String responder_name, String responder_image, String message, String created_at
+ String id, String ask_id, String responder_id, String responder_name, String responder_image, String message, int? arrival_eta_minutes, String? estimated_arrival_time, String created_at
 });
 
 
@@ -364,7 +364,7 @@ class _$ReplyCopyWithImpl<$Res>
 
 /// Create a copy of Reply
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? ask_id = null,Object? responder_id = null,Object? responder_name = null,Object? responder_image = null,Object? message = null,Object? created_at = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? ask_id = null,Object? responder_id = null,Object? responder_name = null,Object? responder_image = null,Object? message = null,Object? arrival_eta_minutes = freezed,Object? estimated_arrival_time = freezed,Object? created_at = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,ask_id: null == ask_id ? _self.ask_id : ask_id // ignore: cast_nullable_to_non_nullable
@@ -372,7 +372,9 @@ as String,responder_id: null == responder_id ? _self.responder_id : responder_id
 as String,responder_name: null == responder_name ? _self.responder_name : responder_name // ignore: cast_nullable_to_non_nullable
 as String,responder_image: null == responder_image ? _self.responder_image : responder_image // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,created_at: null == created_at ? _self.created_at : created_at // ignore: cast_nullable_to_non_nullable
+as String,arrival_eta_minutes: freezed == arrival_eta_minutes ? _self.arrival_eta_minutes : arrival_eta_minutes // ignore: cast_nullable_to_non_nullable
+as int?,estimated_arrival_time: freezed == estimated_arrival_time ? _self.estimated_arrival_time : estimated_arrival_time // ignore: cast_nullable_to_non_nullable
+as String?,created_at: null == created_at ? _self.created_at : created_at // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -458,10 +460,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String ask_id,  String responder_id,  String responder_name,  String responder_image,  String message,  String created_at)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String ask_id,  String responder_id,  String responder_name,  String responder_image,  String message,  int? arrival_eta_minutes,  String? estimated_arrival_time,  String created_at)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Reply() when $default != null:
-return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_that.responder_image,_that.message,_that.created_at);case _:
+return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_that.responder_image,_that.message,_that.arrival_eta_minutes,_that.estimated_arrival_time,_that.created_at);case _:
   return orElse();
 
 }
@@ -479,10 +481,10 @@ return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String ask_id,  String responder_id,  String responder_name,  String responder_image,  String message,  String created_at)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String ask_id,  String responder_id,  String responder_name,  String responder_image,  String message,  int? arrival_eta_minutes,  String? estimated_arrival_time,  String created_at)  $default,) {final _that = this;
 switch (_that) {
 case _Reply():
-return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_that.responder_image,_that.message,_that.created_at);case _:
+return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_that.responder_image,_that.message,_that.arrival_eta_minutes,_that.estimated_arrival_time,_that.created_at);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -499,10 +501,10 @@ return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String ask_id,  String responder_id,  String responder_name,  String responder_image,  String message,  String created_at)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String ask_id,  String responder_id,  String responder_name,  String responder_image,  String message,  int? arrival_eta_minutes,  String? estimated_arrival_time,  String created_at)?  $default,) {final _that = this;
 switch (_that) {
 case _Reply() when $default != null:
-return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_that.responder_image,_that.message,_that.created_at);case _:
+return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_that.responder_image,_that.message,_that.arrival_eta_minutes,_that.estimated_arrival_time,_that.created_at);case _:
   return null;
 
 }
@@ -514,7 +516,7 @@ return $default(_that.id,_that.ask_id,_that.responder_id,_that.responder_name,_t
 @JsonSerializable()
 
 class _Reply implements Reply {
-  const _Reply({required this.id, required this.ask_id, required this.responder_id, required this.responder_name, required this.responder_image, required this.message, required this.created_at});
+  const _Reply({required this.id, required this.ask_id, required this.responder_id, required this.responder_name, required this.responder_image, required this.message, this.arrival_eta_minutes, this.estimated_arrival_time, required this.created_at});
   factory _Reply.fromJson(Map<String, dynamic> json) => _$ReplyFromJson(json);
 
 @override final  String id;
@@ -523,6 +525,8 @@ class _Reply implements Reply {
 @override final  String responder_name;
 @override final  String responder_image;
 @override final  String message;
+@override final  int? arrival_eta_minutes;
+@override final  String? estimated_arrival_time;
 @override final  String created_at;
 
 /// Create a copy of Reply
@@ -538,16 +542,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Reply&&(identical(other.id, id) || other.id == id)&&(identical(other.ask_id, ask_id) || other.ask_id == ask_id)&&(identical(other.responder_id, responder_id) || other.responder_id == responder_id)&&(identical(other.responder_name, responder_name) || other.responder_name == responder_name)&&(identical(other.responder_image, responder_image) || other.responder_image == responder_image)&&(identical(other.message, message) || other.message == message)&&(identical(other.created_at, created_at) || other.created_at == created_at));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Reply&&(identical(other.id, id) || other.id == id)&&(identical(other.ask_id, ask_id) || other.ask_id == ask_id)&&(identical(other.responder_id, responder_id) || other.responder_id == responder_id)&&(identical(other.responder_name, responder_name) || other.responder_name == responder_name)&&(identical(other.responder_image, responder_image) || other.responder_image == responder_image)&&(identical(other.message, message) || other.message == message)&&(identical(other.arrival_eta_minutes, arrival_eta_minutes) || other.arrival_eta_minutes == arrival_eta_minutes)&&(identical(other.estimated_arrival_time, estimated_arrival_time) || other.estimated_arrival_time == estimated_arrival_time)&&(identical(other.created_at, created_at) || other.created_at == created_at));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,ask_id,responder_id,responder_name,responder_image,message,created_at);
+int get hashCode => Object.hash(runtimeType,id,ask_id,responder_id,responder_name,responder_image,message,arrival_eta_minutes,estimated_arrival_time,created_at);
 
 @override
 String toString() {
-  return 'Reply(id: $id, ask_id: $ask_id, responder_id: $responder_id, responder_name: $responder_name, responder_image: $responder_image, message: $message, created_at: $created_at)';
+  return 'Reply(id: $id, ask_id: $ask_id, responder_id: $responder_id, responder_name: $responder_name, responder_image: $responder_image, message: $message, arrival_eta_minutes: $arrival_eta_minutes, estimated_arrival_time: $estimated_arrival_time, created_at: $created_at)';
 }
 
 
@@ -558,7 +562,7 @@ abstract mixin class _$ReplyCopyWith<$Res> implements $ReplyCopyWith<$Res> {
   factory _$ReplyCopyWith(_Reply value, $Res Function(_Reply) _then) = __$ReplyCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String ask_id, String responder_id, String responder_name, String responder_image, String message, String created_at
+ String id, String ask_id, String responder_id, String responder_name, String responder_image, String message, int? arrival_eta_minutes, String? estimated_arrival_time, String created_at
 });
 
 
@@ -575,7 +579,7 @@ class __$ReplyCopyWithImpl<$Res>
 
 /// Create a copy of Reply
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? ask_id = null,Object? responder_id = null,Object? responder_name = null,Object? responder_image = null,Object? message = null,Object? created_at = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? ask_id = null,Object? responder_id = null,Object? responder_name = null,Object? responder_image = null,Object? message = null,Object? arrival_eta_minutes = freezed,Object? estimated_arrival_time = freezed,Object? created_at = null,}) {
   return _then(_Reply(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,ask_id: null == ask_id ? _self.ask_id : ask_id // ignore: cast_nullable_to_non_nullable
@@ -583,7 +587,9 @@ as String,responder_id: null == responder_id ? _self.responder_id : responder_id
 as String,responder_name: null == responder_name ? _self.responder_name : responder_name // ignore: cast_nullable_to_non_nullable
 as String,responder_image: null == responder_image ? _self.responder_image : responder_image // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,created_at: null == created_at ? _self.created_at : created_at // ignore: cast_nullable_to_non_nullable
+as String,arrival_eta_minutes: freezed == arrival_eta_minutes ? _self.arrival_eta_minutes : arrival_eta_minutes // ignore: cast_nullable_to_non_nullable
+as int?,estimated_arrival_time: freezed == estimated_arrival_time ? _self.estimated_arrival_time : estimated_arrival_time // ignore: cast_nullable_to_non_nullable
+as String?,created_at: null == created_at ? _self.created_at : created_at // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

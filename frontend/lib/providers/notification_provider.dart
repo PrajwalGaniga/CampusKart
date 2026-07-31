@@ -23,12 +23,12 @@ class NotificationsNotifier extends StateNotifier<AsyncValue<List<AppNotificatio
     }
   }
 
-  Future<void> markAsRead(int notificationId) async {
+  Future<void> markAsRead(String notificationId) async {
     try {
       await _repository.markAsRead(notificationId);
       if (state.hasValue) {
         final notifications = state.value!.map((n) {
-          if (n.id == notificationId.toString()) {
+          if (n.id == notificationId) {
             return n.copyWith(is_read: true);
           }
           return n;

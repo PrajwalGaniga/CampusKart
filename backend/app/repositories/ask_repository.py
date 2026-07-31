@@ -1,5 +1,6 @@
 from typing import List, Optional
 from bson import ObjectId
+from bson.errors import InvalidId
 from beanie.operators import In, And
 import pymongo
 from app.models.ask import Ask
@@ -14,7 +15,11 @@ async def create(ask: Ask) -> Ask:
     return ask
 
 async def find_by_id(ask_id: str) -> Optional[Ask]:
-    return await Ask.get(ObjectId(ask_id))
+    try:
+        oid = ObjectId(ask_id)
+        return await Ask.get(oid)
+    except InvalidId:
+        return None
 
 async def find_feed(friend_ids: List[str], skip: int = 0, limit: int = 20) -> List[Ask]:
     return await Ask.find(
@@ -39,10 +44,15 @@ async def atomic_increment_and_lock(ask_id: str) -> int:
     """
     now = utc_now()
     
+    try:
+        oid = ObjectId(ask_id)
+    except InvalidId:
+        return -1
+
     # We use pymongo directly for the atomic update to ensure exact control over the return document
     result = await Ask.get_motor_collection().find_one_and_update(
         {
-            "_id": ObjectId(ask_id),
+            "_id": oid,
             "status": "OPEN",
             "expires_at": {"$gt": now},
             "reply_count": {"$lt": settings.ASK_MAX_REPLIES},
@@ -69,9 +79,14 @@ async def atomic_increment_and_lock(ask_id: str) -> int:
     return new_count
 
 async def resolve(ask_id: str, reply_id: str) -> bool:
+    try:
+        oid = ObjectId(ask_id)
+    except InvalidId:
+        return False
+        
     result = await Ask.get_motor_collection().update_one(
         {
-            "_id": ObjectId(ask_id),
+            "_id": oid,
             "status": {"$in": ["OPEN", "LOCKED"]},
             "is_active": True
         },
@@ -86,8 +101,13 @@ async def resolve(ask_id: str, reply_id: str) -> bool:
     return result.modified_count > 0
 
 async def soft_delete(ask_id: str) -> bool:
+    try:
+        oid = ObjectId(ask_id)
+    except InvalidId:
+        return False
+        
     result = await Ask.get_motor_collection().update_one(
-        {"_id": ObjectId(ask_id)},
+        {"_id": oid},
         {"$set": {"is_active": False, "status": "EXPIRED"}}
     )
     return result.modified_count > 0

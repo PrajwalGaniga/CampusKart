@@ -35,8 +35,8 @@ class NotificationsScreen extends ConsumerWidget {
                   trailing: notif.is_read
                       ? null
                       : IconButton(
-                          icon: const Icon(Icons.check, color: Colors.blue),
-                          onPressed: () => ref.read(notificationsProvider.notifier).markAsRead(int.parse(notif.id)),
+                          icon: const Icon(Icons.check, color: Colors.green),
+                          onPressed: () => ref.read(notificationsProvider.notifier).markAsRead(notif.id),
                         ),
                 );
               },

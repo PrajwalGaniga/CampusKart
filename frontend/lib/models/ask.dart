@@ -33,6 +33,8 @@ abstract class Reply with _$Reply {
     required String responder_name,
     required String responder_image,
     required String message,
+    int? arrival_eta_minutes,
+    String? estimated_arrival_time,
     required String created_at,
   }) = _Reply;
 

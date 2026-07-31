@@ -15,12 +15,16 @@ class _CreateAskScreenState extends ConsumerState<CreateAskScreen> {
   final _descController = TextEditingController();
   final _locationController = TextEditingController();
   String _selectedCategory = 'ACADEMIC';
+  bool _isLoading = false;
 
   final List<String> _categories = [
     'ACADEMIC', 'ITEMS', 'FOOD', 'TRANSPORT', 'LOCATION', 'EMERGENCY', 'EVENT', 'OTHER'
   ];
 
   void _submit() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
     final data = {
       'title': _titleController.text,
       'description': _descController.text,
@@ -37,6 +41,10 @@ class _CreateAskScreenState extends ConsumerState<CreateAskScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -72,8 +80,8 @@ class _CreateAskScreenState extends ConsumerState<CreateAskScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Post Ask'),
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading ? const CircularProgressIndicator() : const Text('Post Ask'),
               ),
             ),
           ],

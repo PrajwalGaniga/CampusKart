@@ -37,6 +37,7 @@ class AskResponse(BaseModel):
 
 class ReplyCreate(BaseModel):
     message: str = Field(..., min_length=1, max_length=500)
+    arrival_eta_minutes: Optional[int] = Field(default=None, ge=1, le=1440)
 
 class ReplyResponse(BaseModel):
     id: str
@@ -45,6 +46,8 @@ class ReplyResponse(BaseModel):
     responder_name: str
     responder_image: str
     message: str
+    arrival_eta_minutes: Optional[int] = None
+    estimated_arrival_time: Optional[str] = None
     created_at: str
 
 class AskResolve(BaseModel):

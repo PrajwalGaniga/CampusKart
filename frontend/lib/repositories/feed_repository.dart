@@ -33,10 +33,14 @@ class FeedRepository {
     return (response.data as List).map((e) => Reply.fromJson(e)).toList();
   }
 
-  Future<void> createReply(String askId, String message) async {
+  Future<void> createReply(String askId, String message, int? arrivalEtaMinutes) async {
+    final Map<String, dynamic> data = {'message': message};
+    if (arrivalEtaMinutes != null) {
+      data['arrival_eta_minutes'] = arrivalEtaMinutes;
+    }
     await _dio.post(
       ApiConstants.askReply(askId),
-      data: {'message': message},
+      data: data,
     );
   }
 

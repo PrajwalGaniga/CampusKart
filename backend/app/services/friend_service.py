@@ -13,15 +13,28 @@ async def search_users(query: str, current_user: User) -> List[UserSearchRespons
     if not query:
         return []
     users = await friend_repo.search_users(query, str(current_user.id))
-    return [
-        UserSearchResponse(
-            id=str(u.id),
+    
+    current_user_id = str(current_user.id)
+    response = []
+    for u in users:
+        target_id = str(u.id)
+        status = "NONE"
+        if await friend_repo.are_friends(current_user_id, target_id):
+            status = "FRIENDS"
+        elif await friend_repo.get_pending_request(current_user_id, target_id):
+            status = "PENDING_SENT"
+        elif await friend_repo.get_pending_request(target_id, current_user_id):
+            status = "PENDING_RECEIVED"
+            
+        response.append(UserSearchResponse(
+            id=target_id,
             username=u.username,
             display_name=u.display_name,
             profile_image=u.profile_picture,
-            status=u.status
-        ) for u in users
-    ]
+            status=u.status,
+            friendship_status=status
+        ))
+    return response
 
 async def send_friend_request(req: FriendRequestCreate, current_user: User):
     if req.username == current_user.username:

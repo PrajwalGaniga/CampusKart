@@ -19,8 +19,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _deptController = TextEditingController(text: 'CS');
   final _yearController = TextEditingController(text: '1');
   final _sectionController = TextEditingController(text: 'A');
+  bool _isLoading = false;
 
   void _register() async {
+    if (_isLoading) return;
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
       return;
@@ -36,14 +38,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'section': _sectionController.text,
     };
 
-    await ref.read(authProvider.notifier).register(data);
-    final state = ref.read(authProvider);
+    setState(() => _isLoading = true);
+    
+    try {
+      await ref.read(authProvider.notifier).register(data);
+      final state = ref.read(authProvider);
 
-    if (!state.hasError && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered Successfully. Please Login.')));
-      context.go('/login');
-    } else if (state.hasError && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registration Failed: ${state.error}')));
+      if (!state.hasError && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered Successfully. Please Login.')));
+        context.go('/login');
+      } else if (state.hasError && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registration Failed: ${state.error}')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -71,8 +81,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: authState.isLoading ? null : _register,
-                child: authState.isLoading ? const CircularProgressIndicator() : const Text('Register'),
+                onPressed: _isLoading ? null : _register,
+                child: _isLoading ? const CircularProgressIndicator() : const Text('Register'),
               ),
             ),
           ],

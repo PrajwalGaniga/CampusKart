@@ -54,9 +54,9 @@ class FeedNotifier extends StateNotifier<AsyncValue<List<Ask>>> {
     }
   }
 
-  Future<void> replyToAsk(String askId, String message) async {
+  Future<void> replyToAsk(String askId, String message, int? arrivalEtaMinutes) async {
     try {
-      await _repository.createReply(askId, message);
+      await _repository.createReply(askId, message, arrivalEtaMinutes);
       repliedAskIds.add(askId);
       if (state.hasValue) {
         final asks = state.value!.map((ask) {

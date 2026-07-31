@@ -109,7 +109,7 @@ class _MyAsksTab extends ConsumerWidget {
 
 class _AskCard extends ConsumerWidget {
   final Ask ask;
-  final currentUser;
+  final dynamic currentUser;
   final bool isMyAsk;
 
   const _AskCard({
@@ -234,7 +234,17 @@ class _RepliesList extends ConsumerWidget {
                           child: const Icon(Icons.person),
                         ),
                         title: Text(reply.responder_name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(reply.message),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(reply.message),
+                            if (reply.arrival_eta_minutes != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text('ETA: ${reply.arrival_eta_minutes} mins', style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12)),
+                              ),
+                          ],
+                        ),
                         trailing: ask.status == 'OPEN'
                             ? IconButton(
                                 icon: const Icon(Icons.check_circle_outline, color: Colors.green),
@@ -280,14 +290,26 @@ class _ReplyForm extends ConsumerStatefulWidget {
 
 class _ReplyFormState extends ConsumerState<_ReplyForm> {
   final _controller = TextEditingController();
+  final _customEtaController = TextEditingController();
   bool _isSubmitting = false;
+  int? _selectedEta;
+  bool _isCustomEta = false;
 
   void _submitReply() async {
+    if (_isSubmitting) return;
     if (_controller.text.isEmpty) return;
+
+    int? finalEta = _selectedEta;
+    if (_isCustomEta) {
+      final parsed = int.tryParse(_customEtaController.text);
+      if (parsed != null && parsed > 0) {
+        finalEta = parsed;
+      }
+    }
 
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(feedProvider.notifier).replyToAsk(widget.askId, _controller.text);
+      await ref.read(feedProvider.notifier).replyToAsk(widget.askId, _controller.text, finalEta);
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reply posted!')));
@@ -334,6 +356,50 @@ class _ReplyFormState extends ConsumerState<_ReplyForm> {
             ),
             maxLines: 3,
           ),
+          const SizedBox(height: 16),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text('ETA (Optional)', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8.0,
+            children: [2, 5, 10, 15, 20].map((mins) {
+              return ChoiceChip(
+                label: Text('$mins m'),
+                selected: !_isCustomEta && _selectedEta == mins,
+                onSelected: (selected) {
+                  setState(() {
+                    _isCustomEta = false;
+                    _selectedEta = selected ? mins : null;
+                  });
+                },
+              );
+            }).toList()..add(
+              ChoiceChip(
+                label: const Text('Other'),
+                selected: _isCustomEta,
+                onSelected: (selected) {
+                  setState(() {
+                    _isCustomEta = selected;
+                    if (selected) _selectedEta = null;
+                  });
+                },
+              )
+            ),
+          ),
+          if (_isCustomEta) ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: _customEtaController,
+              decoration: const InputDecoration(
+                hintText: 'Enter minutes',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,

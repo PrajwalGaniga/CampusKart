@@ -11,6 +11,7 @@ abstract class UserSearchResponse with _$UserSearchResponse {
     required String display_name,
     required String profile_image,
     required String status,
+    @Default('NONE') String friendship_status,
   }) = _UserSearchResponse;
 
   factory UserSearchResponse.fromJson(Map<String, dynamic> json) => _$UserSearchResponseFromJson(json);

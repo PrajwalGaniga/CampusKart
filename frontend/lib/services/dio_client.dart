@@ -25,15 +25,15 @@ final dioProvider = Provider<Dio>((ref) {
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
-        log('REQ: ${options.method} ${options.uri}');
+        log('REQ: ${options.method} ${options.uri}\nBODY: ${options.data}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
-        log('RES: ${response.statusCode} ${response.requestOptions.uri}');
+        log('RES: ${response.statusCode} ${response.requestOptions.uri}\nDATA: ${response.data}');
         return handler.next(response);
       },
       onError: (DioException e, handler) async {
-        log('ERR: ${e.response?.statusCode} ${e.requestOptions.uri} - ${e.message}');
+        log('ERR: ${e.response?.statusCode} ${e.requestOptions.uri} - ${e.message}\nRESPONSE: ${e.response?.data}');
         if (e.response?.statusCode == 401) {
           // Token might be expired. Handle token refresh here if applicable,
           // or log out the user.

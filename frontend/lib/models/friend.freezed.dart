@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserSearchResponse {
 
- String get id; String get username; String get display_name; String get profile_image; String get status;
+ String get id; String get username; String get display_name; String get profile_image; String get status; String get friendship_status;
 /// Create a copy of UserSearchResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $UserSearchResponseCopyWith<UserSearchResponse> get copyWith => _$UserSearchResp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserSearchResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.profile_image, profile_image) || other.profile_image == profile_image)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserSearchResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.profile_image, profile_image) || other.profile_image == profile_image)&&(identical(other.status, status) || other.status == status)&&(identical(other.friendship_status, friendship_status) || other.friendship_status == friendship_status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,display_name,profile_image,status);
+int get hashCode => Object.hash(runtimeType,id,username,display_name,profile_image,status,friendship_status);
 
 @override
 String toString() {
-  return 'UserSearchResponse(id: $id, username: $username, display_name: $display_name, profile_image: $profile_image, status: $status)';
+  return 'UserSearchResponse(id: $id, username: $username, display_name: $display_name, profile_image: $profile_image, status: $status, friendship_status: $friendship_status)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $UserSearchResponseCopyWith<$Res>  {
   factory $UserSearchResponseCopyWith(UserSearchResponse value, $Res Function(UserSearchResponse) _then) = _$UserSearchResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String username, String display_name, String profile_image, String status
+ String id, String username, String display_name, String profile_image, String status, String friendship_status
 });
 
 
@@ -65,13 +65,14 @@ class _$UserSearchResponseCopyWithImpl<$Res>
 
 /// Create a copy of UserSearchResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? profile_image = null,Object? status = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? profile_image = null,Object? status = null,Object? friendship_status = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,display_name: null == display_name ? _self.display_name : display_name // ignore: cast_nullable_to_non_nullable
 as String,profile_image: null == profile_image ? _self.profile_image : profile_image // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,friendship_status: null == friendship_status ? _self.friendship_status : friendship_status // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String profile_image,  String status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String profile_image,  String status,  String friendship_status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserSearchResponse() when $default != null:
-return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status,_that.friendship_status);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String profile_image,  String status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String profile_image,  String status,  String friendship_status)  $default,) {final _that = this;
 switch (_that) {
 case _UserSearchResponse():
-return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status,_that.friendship_status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String username,  String display_name,  String profile_image,  String status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String username,  String display_name,  String profile_image,  String status,  String friendship_status)?  $default,) {final _that = this;
 switch (_that) {
 case _UserSearchResponse() when $default != null:
-return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_that.status,_that.friendship_status);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.id,_that.username,_that.display_name,_that.profile_image,_
 @JsonSerializable()
 
 class _UserSearchResponse implements UserSearchResponse {
-  const _UserSearchResponse({required this.id, required this.username, required this.display_name, required this.profile_image, required this.status});
+  const _UserSearchResponse({required this.id, required this.username, required this.display_name, required this.profile_image, required this.status, this.friendship_status = 'NONE'});
   factory _UserSearchResponse.fromJson(Map<String, dynamic> json) => _$UserSearchResponseFromJson(json);
 
 @override final  String id;
@@ -221,6 +222,7 @@ class _UserSearchResponse implements UserSearchResponse {
 @override final  String display_name;
 @override final  String profile_image;
 @override final  String status;
+@override@JsonKey() final  String friendship_status;
 
 /// Create a copy of UserSearchResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserSearchResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.profile_image, profile_image) || other.profile_image == profile_image)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserSearchResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.profile_image, profile_image) || other.profile_image == profile_image)&&(identical(other.status, status) || other.status == status)&&(identical(other.friendship_status, friendship_status) || other.friendship_status == friendship_status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,display_name,profile_image,status);
+int get hashCode => Object.hash(runtimeType,id,username,display_name,profile_image,status,friendship_status);
 
 @override
 String toString() {
-  return 'UserSearchResponse(id: $id, username: $username, display_name: $display_name, profile_image: $profile_image, status: $status)';
+  return 'UserSearchResponse(id: $id, username: $username, display_name: $display_name, profile_image: $profile_image, status: $status, friendship_status: $friendship_status)';
 }
 
 
@@ -255,7 +257,7 @@ abstract mixin class _$UserSearchResponseCopyWith<$Res> implements $UserSearchRe
   factory _$UserSearchResponseCopyWith(_UserSearchResponse value, $Res Function(_UserSearchResponse) _then) = __$UserSearchResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String username, String display_name, String profile_image, String status
+ String id, String username, String display_name, String profile_image, String status, String friendship_status
 });
 
 
@@ -272,13 +274,14 @@ class __$UserSearchResponseCopyWithImpl<$Res>
 
 /// Create a copy of UserSearchResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? profile_image = null,Object? status = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? profile_image = null,Object? status = null,Object? friendship_status = null,}) {
   return _then(_UserSearchResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,display_name: null == display_name ? _self.display_name : display_name // ignore: cast_nullable_to_non_nullable
 as String,profile_image: null == profile_image ? _self.profile_image : profile_image // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,friendship_status: null == friendship_status ? _self.friendship_status : friendship_status // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
