@@ -37,16 +37,14 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    // Split out the commands to see exactly which one fails.
-                    // Note: Removed the backslash before $ which might have caused bash syntax errors!
                     bat '''
                     echo "--- Building Backend ---"
-                    wsl -- bash -c "eval $(minikube docker-env) && cd backend && docker build -t campuskart-backend:latest ."
+                    wsl -- bash -c "cd backend && minikube image build -t campuskart-backend:latest ."
                     '''
 
                     bat '''
                     echo "--- Building Frontend ---"
-                    wsl -- bash -c "eval $(minikube docker-env) && cd public-view && docker build -t campuskart-frontend:latest ."
+                    wsl -- bash -c "cd public-view && minikube image build -t campuskart-frontend:latest ."
                     '''
                 }
             }
