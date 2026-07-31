@@ -12,6 +12,7 @@ class Notification(Document):
     title: str
     message: str
     type: str  # ASK, REPLY, FRIEND_REQUEST, FRIEND_ACCEPTED, SYSTEM
+    sender_avatar: str = ""
     is_read: bool = False
     created_at: datetime = Field(default_factory=utc_now)
 

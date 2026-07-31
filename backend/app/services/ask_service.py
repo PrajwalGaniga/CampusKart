@@ -147,7 +147,8 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
         user_id=ask.requester_id,
         title="New Reply",
         message=f"{current_user.display_name} replied to your ask: {ask.title}",
-        type="REPLY_RECEIVED"
+        type="REPLY_RECEIVED",
+        sender_avatar=current_user.profile_picture
     )
     
     await act_repo.create_activity_log(
@@ -164,7 +165,8 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
             user_id=ask.requester_id,
             title="Ask Locked",
             message=f"Your ask '{ask.title}' has reached the maximum number of replies and is now locked.",
-            type="ASK_LOCKED"
+            type="ASK_LOCKED",
+            sender_avatar=""  # System notification, no specific sender
         )
         await act_repo.create_activity_log(
             user_id=ask.requester_id,
@@ -233,7 +235,8 @@ async def resolve_ask(ask_id: str, reply_id: str, current_user: User):
             user_id=reply.responder_id,
             title="Ask Resolved",
             message=f"Your reply to '{ask.title}' was accepted! Ask is resolved.",
-            type="ASK_RESOLVED"
+            type="ASK_RESOLVED",
+            sender_avatar=current_user.profile_picture
         )
     
     await act_repo.create_activity_log(

@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     department: str
     year: int
     section: str
+    profile_picture: Optional[str] = "1.jpg"
 
 class UserLogin(BaseModel):
     username: str

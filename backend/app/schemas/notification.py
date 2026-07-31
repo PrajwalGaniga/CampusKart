@@ -7,6 +7,7 @@ class NotificationResponse(BaseModel):
     title: str
     message: str
     type: str
+    sender_avatar: str = ""
     is_read: bool
     created_at: datetime
     

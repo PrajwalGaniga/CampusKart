@@ -68,7 +68,8 @@ async def send_friend_request(req: FriendRequestCreate, current_user: User):
         user_id=receiver_id,
         title="New Friend Request",
         message=f"{current_user.display_name} sent you a friend request",
-        type="FRIEND_REQUEST"
+        type="FRIEND_REQUEST",
+        sender_avatar=current_user.profile_picture
     )
     await act_repo.create_activity_log(
         user_id=sender_id,
@@ -130,7 +131,8 @@ async def accept_request(action: FriendRequestAction, current_user: User):
         user_id=req.sender_id,
         title="Friend Request Accepted",
         message=f"{current_user.display_name} accepted your friend request",
-        type="FRIEND_ACCEPTED"
+        type="FRIEND_ACCEPTED",
+        sender_avatar=current_user.profile_picture
     )
     
     await act_repo.create_activity_log(
@@ -158,7 +160,8 @@ async def reject_request(action: FriendRequestAction, current_user: User):
         user_id=req.sender_id,
         title="Friend Request Rejected",
         message=f"{current_user.display_name} rejected your friend request",
-        type="FRIEND_REJECTED"
+        type="FRIEND_REJECTED",
+        sender_avatar=current_user.profile_picture
     )
     
     await act_repo.create_activity_log(
@@ -202,7 +205,8 @@ async def remove_friend(friend_id: str, current_user: User):
         user_id=friend_id,
         title="Friend Removed",
         message=f"{current_user.display_name} has removed you from their friends list",
-        type="SYSTEM"
+        type="SYSTEM",
+        sender_avatar=current_user.profile_picture
     )
     
     return {"status": "success", "message": "Friend removed"}

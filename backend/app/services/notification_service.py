@@ -4,16 +4,18 @@ from app.schemas.notification import NotificationResponse
 from typing import List
 from app.core.event_publisher import event_publisher
 
-async def create_notification(user_id: str, title: str, message: str, type: str) -> NotificationResponse:
+async def create_notification(user_id: str, title: str, message: str, type: str, sender_avatar: str = "") -> NotificationResponse:
     notification = Notification(
         user_id=user_id,
         title=title,
         message=message,
-        type=type
+        type=type,
+        sender_avatar=sender_avatar
     )
     await notification.insert()
     
     # Push real-time notification to the user via WebSocket
+    # We could theoretically include sender_avatar here, but omitting for now if the frontend doesn't need it on socket yet
     await event_publisher.send_notification(user_id, title, message, type)
     
     return _map_to_response(notification)
@@ -51,6 +53,7 @@ def _map_to_response(notification: Notification) -> NotificationResponse:
         title=notification.title,
         message=notification.message,
         type=notification.type,
+        sender_avatar=notification.sender_avatar,
         is_read=notification.is_read,
         created_at=notification.created_at
     )

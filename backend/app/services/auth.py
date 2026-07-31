@@ -22,6 +22,7 @@ async def register_user(user_in: UserCreate) -> User:
         department=user_in.department,
         year=user_in.year,
         section=user_in.section,
+        profile_picture=user_in.profile_picture,
         role="STUDENT"
     )
     await new_user.insert()

@@ -15,7 +15,8 @@ async def register(user_in: UserCreate):
         display_name=user.display_name,
         email=user.email,
         role=user.role,
-        status=user.status
+        status=user.status,
+        profile_picture=user.profile_picture
     )
 
 @router.post("/login", response_model=Token)

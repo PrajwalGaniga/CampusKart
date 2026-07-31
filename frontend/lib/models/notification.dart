@@ -12,6 +12,7 @@ abstract class AppNotification with _$AppNotification {
     required String title,
     required String message,
     required String type,
+    @Default('') String sender_avatar,
     required bool is_read,
     required DateTime created_at,
   }) = _AppNotification;
