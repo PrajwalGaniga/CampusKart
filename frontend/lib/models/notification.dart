@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'notification.freezed.dart';
 part 'notification.g.dart';
 
+// ignore_for_file: non_constant_identifier_names
 @freezed
 abstract class AppNotification with _$AppNotification {
   const factory AppNotification({

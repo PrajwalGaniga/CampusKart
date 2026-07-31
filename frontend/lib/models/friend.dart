@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'friend.freezed.dart';
 part 'friend.g.dart';
 
+// ignore_for_file: non_constant_identifier_names
 @freezed
 abstract class UserSearchResponse with _$UserSearchResponse {
   const factory UserSearchResponse({
@@ -11,6 +12,7 @@ abstract class UserSearchResponse with _$UserSearchResponse {
     required String display_name,
     required String profile_image,
     required String status,
+    @Default('NONE') String friendship_status,
   }) = _UserSearchResponse;
 
   factory UserSearchResponse.fromJson(Map<String, dynamic> json) => _$UserSearchResponseFromJson(json);

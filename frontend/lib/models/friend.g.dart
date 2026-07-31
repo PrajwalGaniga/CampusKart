@@ -13,6 +13,7 @@ _UserSearchResponse _$UserSearchResponseFromJson(Map<String, dynamic> json) =>
       display_name: json['display_name'] as String,
       profile_image: json['profile_image'] as String,
       status: json['status'] as String,
+      friendship_status: json['friendship_status'] as String? ?? 'NONE',
     );
 
 Map<String, dynamic> _$UserSearchResponseToJson(_UserSearchResponse instance) =>
@@ -22,6 +23,7 @@ Map<String, dynamic> _$UserSearchResponseToJson(_UserSearchResponse instance) =>
       'display_name': instance.display_name,
       'profile_image': instance.profile_image,
       'status': instance.status,
+      'friendship_status': instance.friendship_status,
     };
 
 _PendingRequestResponse _$PendingRequestResponseFromJson(

@@ -18,8 +18,8 @@ class FriendRepository {
     return (response.data as List).map((e) => FriendResponse.fromJson(e)).toList();
   }
 
-  Future<List<UserSearchResponse>> searchUsers(String query) async {
-    final response = await _dio.get('${ApiConstants.searchUsers}?q=$query');
+  Future<List<UserSearchResponse>> searchUsers(String query, {CancelToken? cancelToken}) async {
+    final response = await _dio.get('${ApiConstants.searchUsers}?query=$query', cancelToken: cancelToken);
     return (response.data as List).map((e) => UserSearchResponse.fromJson(e)).toList();
   }
 
@@ -35,19 +35,19 @@ class FriendRepository {
     return (response.data as List).map((e) => PendingRequestResponse.fromJson(e)).toList();
   }
 
-  Future<void> acceptRequest(int requestId) async {
-    await _dio.post(ApiConstants.acceptRequest, data: {'request_id': requestId.toString()});
+  Future<void> acceptRequest(String requestId) async {
+    await _dio.post(ApiConstants.acceptRequest, data: {'request_id': requestId});
   }
 
-  Future<void> rejectRequest(int requestId) async {
-    await _dio.post(ApiConstants.rejectRequest, data: {'request_id': requestId.toString()});
+  Future<void> rejectRequest(String requestId) async {
+    await _dio.post(ApiConstants.rejectRequest, data: {'request_id': requestId});
   }
 
-  Future<void> cancelRequest(int requestId) async {
-    await _dio.post(ApiConstants.cancelRequest, data: {'request_id': requestId.toString()});
+  Future<void> cancelRequest(String requestId) async {
+    await _dio.post(ApiConstants.cancelRequest, data: {'request_id': requestId});
   }
 
-  Future<void> removeFriend(int friendId) async {
+  Future<void> removeFriend(String friendId) async {
     await _dio.delete(ApiConstants.removeFriend(friendId));
   }
 }

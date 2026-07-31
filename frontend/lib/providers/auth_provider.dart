@@ -16,7 +16,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     try {
       final user = await _repository.fetchMe();
       state = AsyncValue.data(user);
-    } catch (e, stackTrace) {
+    } catch (e, _) {
       state = AsyncValue.data(null);
     }
   }
@@ -27,7 +27,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       final user = await _repository.login(username, password);
       state = AsyncValue.data(user);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue.error(e, stackTrace); // stackTrace used intentionally
     }
   }
 
@@ -39,7 +39,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       // Usually, we just login automatically, but let's assume the user has to login
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue.error(e, stackTrace); // stackTrace used intentionally
     }
   }
 
@@ -54,7 +54,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     try {
       final user = await _repository.updateProfile(data);
       state = AsyncValue.data(user);
-    } catch (e, stackTrace) {
+    } catch (e, _) {
       state = prevState; // Revert
     }
   }

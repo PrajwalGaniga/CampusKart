@@ -45,6 +45,8 @@ _Reply _$ReplyFromJson(Map<String, dynamic> json) => _Reply(
   responder_name: json['responder_name'] as String,
   responder_image: json['responder_image'] as String,
   message: json['message'] as String,
+  arrival_eta_minutes: (json['arrival_eta_minutes'] as num?)?.toInt(),
+  estimated_arrival_time: json['estimated_arrival_time'] as String?,
   created_at: json['created_at'] as String,
 );
 
@@ -55,5 +57,7 @@ Map<String, dynamic> _$ReplyToJson(_Reply instance) => <String, dynamic>{
   'responder_name': instance.responder_name,
   'responder_image': instance.responder_image,
   'message': instance.message,
+  'arrival_eta_minutes': instance.arrival_eta_minutes,
+  'estimated_arrival_time': instance.estimated_arrival_time,
   'created_at': instance.created_at,
 };

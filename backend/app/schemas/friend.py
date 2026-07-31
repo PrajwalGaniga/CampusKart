@@ -7,6 +7,7 @@ class UserSearchResponse(BaseModel):
     display_name: str
     profile_image: str
     status: str
+    friendship_status: str = "NONE"
 
 class FriendRequestCreate(BaseModel):
     username: str

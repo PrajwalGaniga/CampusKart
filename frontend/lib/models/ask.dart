@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'ask.freezed.dart';
 part 'ask.g.dart';
 
+// ignore_for_file: non_constant_identifier_names
 @freezed
 abstract class Ask with _$Ask {
   const factory Ask({
@@ -33,6 +34,8 @@ abstract class Reply with _$Reply {
     required String responder_name,
     required String responder_image,
     required String message,
+    int? arrival_eta_minutes,
+    String? estimated_arrival_time,
     required String created_at,
   }) = _Reply;
 

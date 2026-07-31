@@ -18,8 +18,8 @@ class NotificationRepository {
     return (response.data as List).map((e) => AppNotification.fromJson(e)).toList();
   }
 
-  Future<void> markAsRead(int notificationId) async {
-    await _dio.post(ApiConstants.markNotificationRead(notificationId));
+  Future<void> markAsRead(String notificationId) async {
+    await _dio.patch(ApiConstants.markNotificationRead(notificationId));
   }
 
   Future<void> markAllAsRead() async {

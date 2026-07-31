@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user.freezed.dart';
 part 'user.g.dart';
 
+// ignore_for_file: non_constant_identifier_names
 @freezed
 abstract class User with _$User {
   const factory User({

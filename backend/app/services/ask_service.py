@@ -10,6 +10,7 @@ from app.repositories import friend_repository as friend_repo
 from app.services import notification_service
 from app.repositories import activity_repository as act_repo
 from app.core.event_publisher import event_publisher
+from app.core.ws_manager import manager
 from app.core.config import settings
 
 def utc_now():
@@ -53,6 +54,13 @@ async def create_ask(req: AskCreate, current_user: User) -> AskResponse:
     )
     
     await event_publisher.publish_ask_created(str(ask.id), str(current_user.id), ask.dict())
+    
+    # Broadcast to public dashboard (anonymized)
+    public_ask = map_ask_to_response(ask, current_user).model_dump()
+    public_ask["requester_name"] = f"Student near {ask.location}"
+    public_ask["requester_image"] = "/static/default.png"
+    public_ask["requester_id"] = "anonymous"
+    await manager.broadcast_public("ASK_CREATED", public_ask)
     
     return map_ask_to_response(ask, current_user)
 
@@ -119,8 +127,19 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
     if new_count == -1:
         raise HTTPException(status_code=409, detail="Ask is no longer open or has reached max replies")
         
+    # Calculate ETA if provided
+    estimated_arrival_time = None
+    if req.arrival_eta_minutes is not None:
+        estimated_arrival_time = utc_now() + timedelta(minutes=req.arrival_eta_minutes)
+
     # Insert Reply
-    reply = await reply_repo.create_reply(ask_id, str(current_user.id), req.message)
+    reply = await reply_repo.create_reply(
+        ask_id=ask_id, 
+        responder_id=str(current_user.id), 
+        message=req.message,
+        arrival_eta_minutes=req.arrival_eta_minutes,
+        estimated_arrival_time=estimated_arrival_time
+    )
     
     await event_publisher.publish_reply_created(ask_id, str(reply.id), str(current_user.id))
     
@@ -137,6 +156,8 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
         metadata={"ask_id": ask_id, "reply_id": str(reply.id)}
     )
     
+    await manager.broadcast_public("REPLY_ADDED", {"ask_id": ask_id})
+    
     if new_count >= ask.max_replies:
         await event_publisher.publish_ask_locked(ask_id)
         await notification_service.create_notification(
@@ -150,6 +171,8 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
             action="ASK_LOCKED",
             metadata={"ask_id": ask_id}
         )
+        
+        await manager.broadcast_public("ASK_LOCKED", {"ask_id": ask_id})
         
     return {"status": "success", "message": "Reply added successfully"}
 
@@ -179,6 +202,8 @@ async def list_replies(ask_id: str, current_user: User) -> List[ReplyResponse]:
                 responder_name=user.display_name,
                 responder_image=user.profile_picture,
                 message=r.message,
+                arrival_eta_minutes=r.arrival_eta_minutes,
+                estimated_arrival_time=r.estimated_arrival_time.isoformat() if r.estimated_arrival_time else None,
                 created_at=r.created_at.isoformat()
             ))
             
@@ -216,6 +241,8 @@ async def resolve_ask(ask_id: str, reply_id: str, current_user: User):
         action="ASK_RESOLVED",
         metadata={"ask_id": ask_id, "reply_id": reply_id}
     )
+    
+    await manager.broadcast_public("ASK_RESOLVED", {"ask_id": ask_id})
     
     return {"status": "success", "message": "Ask resolved"}
 

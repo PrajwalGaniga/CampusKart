@@ -34,9 +34,9 @@ class ApiConstants {
   static const String acceptRequest = '/api/v1/friends/accept';
   static const String rejectRequest = '/api/v1/friends/reject';
   static const String cancelRequest = '/api/v1/friends/cancel';
-  static String removeFriend(int id) => '/api/v1/friends/$id';
+  static String removeFriend(String id) => '/api/v1/friends/$id';
 
   static const String notifications = '/api/v1/notifications/';
-  static String markNotificationRead(int id) => '/api/v1/notifications/$id/read';
+  static String markNotificationRead(String id) => '/api/v1/notifications/$id/read';
   static const String markAllNotificationsRead = '/api/v1/notifications/read-all';
 }

@@ -23,11 +23,11 @@ class FriendsNotifier extends StateNotifier<AsyncValue<List<FriendResponse>>> {
     }
   }
 
-  Future<void> removeFriend(int friendId) async {
+  Future<void> removeFriend(String friendId) async {
     try {
       await _repository.removeFriend(friendId);
       if (state.hasValue) {
-        state = AsyncValue.data(state.value!.where((f) => f.id != friendId.toString()).toList());
+        state = AsyncValue.data(state.value!.where((f) => f.id != friendId).toList());
       }
     } catch (e) {
       rethrow;
@@ -56,22 +56,22 @@ class PendingRequestsNotifier extends StateNotifier<AsyncValue<List<PendingReque
     }
   }
 
-  Future<void> acceptRequest(int requestId) async {
+  Future<void> acceptRequest(String requestId) async {
     try {
       await _repository.acceptRequest(requestId);
       if (state.hasValue) {
-        state = AsyncValue.data(state.value!.where((r) => r.request_id != requestId.toString()).toList());
+        state = AsyncValue.data(state.value!.where((r) => r.request_id != requestId).toList());
       }
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> rejectRequest(int requestId) async {
+  Future<void> rejectRequest(String requestId) async {
     try {
       await _repository.rejectRequest(requestId);
       if (state.hasValue) {
-        state = AsyncValue.data(state.value!.where((r) => r.request_id != requestId.toString()).toList());
+        state = AsyncValue.data(state.value!.where((r) => r.request_id != requestId).toList());
       }
     } catch (e) {
       rethrow;
@@ -79,8 +79,4 @@ class PendingRequestsNotifier extends StateNotifier<AsyncValue<List<PendingReque
   }
 }
 
-final searchUsersProvider = FutureProvider.family<List<UserSearchResponse>, String>((ref, query) {
-  if (query.isEmpty) return Future.value([]);
-  final repository = ref.watch(friendRepositoryProvider);
-  return repository.searchUsers(query);
-});
+
