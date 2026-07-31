@@ -37,14 +37,14 @@ pipeline {
         stage('Run Container') {
             steps {
                 echo 'Starting new container...'
-                bat 'docker run -d -p %PORT%:8000 --name %CONTAINER_NAME% --network host %IMAGE_NAME%'
+                bat 'docker run -d -p %PORT%:8000 --name %CONTAINER_NAME% %IMAGE_NAME%'
             }
         }
         
         stage('Verify Health') {
             steps {
                 echo 'Waiting for container to start...'
-                sleep 5
+                sleep 10
                 bat 'curl -f http://localhost:%PORT%/health || exit 1'
             }
         }
