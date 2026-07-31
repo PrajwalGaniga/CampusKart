@@ -86,16 +86,28 @@ flutter run
 
 ---
 
-## 📊 Step 7: Access Grafana Dashboard (Terminal 7)
-To monitor your cluster's health and metrics, you can access the Grafana dashboard deployed via Helm.
+## 📊 Step 7: Access Prometheus & Grafana Dashboards (Terminal 7 & 8)
+To monitor your cluster's health and metrics, you can access the Prometheus and Grafana dashboards deployed via Helm.
 
+### Option A: Open Prometheus UI (Terminal 7)
+If you want to run direct metric queries:
 Open a seventh terminal and run:
+```powershell
+wsl kubectl port-forward service/prometheus-server 9090:80
+```
+- Open your browser to: **`http://localhost:9090`**
+
+### Option B: Open Grafana Dashboard (Terminal 8)
+Open an eighth terminal and run:
 ```powershell
 wsl kubectl port-forward service/grafana 3000:80
 ```
-- **IMPORTANT:** Keep this terminal open to maintain the port forward!
-- Once running, open your web browser and go to: **`http://localhost:3000`**
-- *Note:* The default login for Grafana is usually `admin` / `prom-operator` (or you can get the generated password using: `wsl kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode`).
+- Open your browser to: **`http://localhost:3000`**
+- *Login:* The default username is usually `admin`. To get the auto-generated password, run: `wsl kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode`
+
+**Connecting Grafana to Prometheus:**
+When Grafana asks for the Prometheus URL, **do NOT use localhost:9090**! Because both are running inside Kubernetes, they can talk to each other directly using Kubernetes' internal network. 
+- In Grafana Data Sources, set the URL to exactly: **`http://prometheus-server:80`**
 
 ---
 
