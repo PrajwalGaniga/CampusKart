@@ -25,3 +25,10 @@ async def list_replies_for_ask(ask_id: str) -> List[Reply]:
         Reply.ask_id == ask_id,
         Reply.status == "ACTIVE"
     ).sort("-created_at").to_list()
+
+async def find_reply_by_id(reply_id: str) -> Optional[Reply]:
+    try:
+        oid = ObjectId(reply_id)
+        return await Reply.get(oid)
+    except Exception:
+        return None
