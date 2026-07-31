@@ -49,8 +49,19 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       state = AsyncValue.data(user);
     } catch (e, stackTrace) {
       if (e is DioException && e.response?.data != null) {
-        final detail = e.response?.data['detail'] ?? e.message;
-        state = AsyncValue.error(detail, stackTrace);
+        final data = e.response?.data;
+        String errorMessage = e.message ?? 'Unknown error';
+        if (data is Map<String, dynamic> && data.containsKey('detail')) {
+          final detail = data['detail'];
+          if (detail is String) {
+            errorMessage = detail;
+          } else if (detail is List) {
+            errorMessage = detail.map((e) => e['msg'] ?? e.toString()).join(', ');
+          }
+        } else if (data is String) {
+          errorMessage = data;
+        }
+        state = AsyncValue.error(errorMessage, stackTrace);
       } else {
         state = AsyncValue.error(e, stackTrace);
       }
@@ -66,8 +77,19 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
       if (e is DioException && e.response?.data != null) {
-        final detail = e.response?.data['detail'] ?? e.message;
-        state = AsyncValue.error(detail, stackTrace);
+        final data = e.response?.data;
+        String errorMessage = e.message ?? 'Unknown error';
+        if (data is Map<String, dynamic> && data.containsKey('detail')) {
+          final detail = data['detail'];
+          if (detail is String) {
+            errorMessage = detail;
+          } else if (detail is List) {
+            errorMessage = detail.map((e) => e['msg'] ?? e.toString()).join(', ');
+          }
+        } else if (data is String) {
+          errorMessage = data;
+        }
+        state = AsyncValue.error(errorMessage, stackTrace);
       } else {
         state = AsyncValue.error(e, stackTrace);
       }
@@ -88,8 +110,19 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       state = AsyncValue.data(user);
     } catch (e, _) {
       if (e is DioException && e.response?.data != null) {
-        final detail = e.response?.data['detail'] ?? e.message;
-        throw Exception(detail);
+        final data = e.response?.data;
+        String errorMessage = e.message ?? 'Unknown error';
+        if (data is Map<String, dynamic> && data.containsKey('detail')) {
+          final detail = data['detail'];
+          if (detail is String) {
+            errorMessage = detail;
+          } else if (detail is List) {
+            errorMessage = detail.map((e) => e['msg'] ?? e.toString()).join(', ');
+          }
+        } else if (data is String) {
+          errorMessage = data;
+        }
+        throw Exception(errorMessage);
       }
       throw Exception(e.toString());
     }
