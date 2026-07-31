@@ -4,6 +4,7 @@ import { Activity, Server, Database, Users, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Dashboard.module.css';
 import { format } from 'date-fns';
+import { API_BASE_URL, WS_BASE_URL } from '../config';
 import EventFlowVisualizer from '../components/EventFlowVisualizer';
 
 interface Stats {
@@ -30,7 +31,7 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/public/stats');
+      const res = await fetch(`${API_BASE_URL}/api/v1/public/stats`);
       const data = await res.json();
       setStats(data);
     } catch (e) {
@@ -40,7 +41,7 @@ export default function Dashboard() {
 
   const fetchHealth = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/public/health');
+      const res = await fetch(`${API_BASE_URL}/api/v1/public/health`);
       const data = await res.json();
       setHealth(data);
     } catch (e) {
@@ -63,7 +64,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Connect to WebSocket for live feed
-    const ws = new WebSocket('ws://127.0.0.1:8000/ws/public');
+    const ws = new WebSocket(`${WS_BASE_URL}/ws/public`);
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

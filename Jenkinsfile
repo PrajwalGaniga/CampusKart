@@ -41,7 +41,7 @@ pipeline {
 
                     bat '''
                     echo "--- Building Frontend ---"
-                    wsl -- bash -c "cd frontend && minikube image build -t campuskart-frontend:latest ."
+                    wsl -- bash -c "cd public-view && minikube image build -t campuskart-frontend:latest ."
                     '''
                 }
             }
@@ -57,6 +57,7 @@ pipeline {
                 
                 echo "--- Forcing Rollout to use new images ---"
                 wsl -- kubectl rollout restart deployment campuskart-backend
+                wsl -- kubectl rollout restart deployment campuskart-frontend
                 '''
             }
         }
