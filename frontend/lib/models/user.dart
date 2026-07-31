@@ -1,0 +1,33 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'user.freezed.dart';
+part 'user.g.dart';
+
+@freezed
+class User with _$User {
+  const factory User({
+    required String id,
+    required String username,
+    required String display_name,
+    required String email,
+    required String role,
+    required String status,
+    String? profile_picture,
+    String? department,
+    int? year,
+    String? section,
+  }) = _User;
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+
+@freezed
+class AuthToken with _$AuthToken {
+  const factory AuthToken({
+    required String access_token,
+    required String token_type,
+    required String refresh_token,
+  }) = _AuthToken;
+
+  factory AuthToken.fromJson(Map<String, dynamic> json) => _$AuthTokenFromJson(json);
+}
