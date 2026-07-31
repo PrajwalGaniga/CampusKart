@@ -2,60 +2,73 @@ pipeline {
     agent any
 
     environment {
-        CONTAINER_NAME = 'campuskart-backend'
-        IMAGE_NAME = 'campuskart-backend:latest'
-        PORT = '8000'
+        BACKEND_IMAGE = "campuskart-backend:latest"
+        FRONTEND_IMAGE = "campuskart-frontend:latest"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out source code...'
                 checkout scm
             }
         }
-
-        stage('Build Docker Image') {
+        
+        stage('Prepare Environment') {
             steps {
-                dir('backend') {
-                    echo 'Building backend Docker image...'
-                    bat 'docker build -t %IMAGE_NAME% .'
+                script {
+                    bat '''
+                    echo "--- Checking WSL Distribution ---"
+                    wsl -l -v
+                    
+                    echo "--- Starting Minikube (if stopped) ---"
+                    wsl -- bash -c "minikube status || minikube start --driver=docker"
+                    
+                    echo "--- Checking Minikube & Docker Status ---"
+                    wsl -- bash -c "minikube status"
+                    wsl -- bash -c "docker --version"
+                    '''
                 }
             }
         }
 
-        stage('Stop and Remove Existing Container') {
+        stage('Build Docker Images') {
             steps {
-                echo 'Stopping and removing existing container if it exists...'
+                script {
+                    bat '''
+                    echo "--- Building Backend ---"
+                    wsl -- bash -c "cd backend && minikube image build -t campuskart-backend:latest ."
+                    '''
+
+                    bat '''
+                    echo "--- Building Frontend ---"
+                    wsl -- bash -c "cd frontend && minikube image build -t campuskart-frontend:latest ."
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
                 bat '''
-                docker stop %CONTAINER_NAME% >nul 2>&1 || exit 0
-                docker rm %CONTAINER_NAME% >nul 2>&1 || exit 0
+                echo "--- Applying K8s Manifests ---"
+                wsl -- kubectl apply -f k8s/mongodb.yaml
+                wsl -- kubectl apply -f k8s/backend.yaml
+                wsl -- kubectl apply -f k8s/frontend.yaml
+                
+                echo "--- Forcing Rollout to use new images ---"
+                wsl -- kubectl rollout restart deployment campuskart-backend
                 '''
             }
         }
 
-        stage('Run Container') {
+        stage('Verify Deployment') {
             steps {
-                echo 'Starting new container...'
-                bat 'docker run -d -p %PORT%:8000 --name %CONTAINER_NAME% %IMAGE_NAME%'
+                bat '''
+                echo "--- Fetching Pods and Services ---"
+                wsl -- kubectl get pods
+                wsl -- kubectl get svc
+                '''
             }
-        }
-        
-        stage('Verify Health') {
-            steps {
-                echo 'Waiting for container to start...'
-                sleep 10
-                bat 'curl -f http://localhost:%PORT%/health || exit 1'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment successful!'
-        }
-        failure {
-            echo 'Deployment failed!'
         }
     }
 }
