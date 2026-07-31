@@ -16,18 +16,18 @@ pipeline {
             }
         }
         
-        stage('Debug Environment') {
+        stage('Prepare Environment') {
             steps {
                 script {
                     bat '''
                     echo "--- Checking WSL Distribution ---"
                     wsl -l -v
                     
-                    echo "--- Checking Directory in WSL ---"
-                    wsl -- bash -c "pwd && ls -la"
+                    echo "--- Starting Minikube (if stopped) ---"
+                    wsl -- bash -c "minikube status || minikube start --driver=docker"
                     
                     echo "--- Checking Minikube & Docker Status ---"
-                    wsl -- bash -c "minikube status || echo 'Minikube not found or not running'"
+                    wsl -- bash -c "minikube status"
                     wsl -- bash -c "docker --version"
                     '''
                 }
