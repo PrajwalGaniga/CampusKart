@@ -9,22 +9,43 @@ pipeline {
         FRONTEND_IMAGE = "campuskart-frontend:latest"
     }
 
-    stages {
         stage('Checkout') {
             steps {
-                // Jenkins handles the checkout from SCM automatically if configured in the pipeline job.
-                // However, we explicitly check it out here for clarity.
                 checkout scm
             }
         }
         
+        stage('Debug Environment') {
+            steps {
+                script {
+                    bat '''
+                    echo "--- Checking WSL Distribution ---"
+                    wsl -l -v
+                    
+                    echo "--- Checking Directory in WSL ---"
+                    wsl -- bash -c "pwd && ls -la"
+                    
+                    echo "--- Checking Minikube & Docker Status ---"
+                    wsl -- bash -c "minikube status || echo 'Minikube not found or not running'"
+                    wsl -- bash -c "docker --version"
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 script {
-                    // Jenkins is on Windows, so we use 'bat' instead of 'sh'.
-                    // We run our build commands inside WSL so they use Minikube's Docker daemon.
+                    // Split out the commands to see exactly which one fails.
+                    // Note: Removed the backslash before $ which might have caused bash syntax errors!
                     bat '''
-                    wsl -- bash -c "eval \\$(minikube -p minikube docker-env) && docker build -t campuskart-backend:latest ./backend && docker build -t campuskart-frontend:latest ./public-view"
+                    echo "--- Building Backend ---"
+                    wsl -- bash -c "eval $(minikube docker-env) && cd backend && docker build -t campuskart-backend:latest ."
+                    '''
+
+                    bat '''
+                    echo "--- Building Frontend ---"
+                    wsl -- bash -c "eval $(minikube docker-env) && cd public-view && docker build -t campuskart-frontend:latest ."
                     '''
                 }
             }
@@ -33,6 +54,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 bat '''
+                echo "--- Applying K8s Manifests ---"
                 wsl -- kubectl apply -f k8s/mongodb.yaml
                 wsl -- kubectl apply -f k8s/backend.yaml
                 wsl -- kubectl apply -f k8s/frontend.yaml
@@ -43,6 +65,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 bat '''
+                echo "--- Fetching Pods and Services ---"
                 wsl -- kubectl get pods
                 wsl -- kubectl get svc
                 '''
