@@ -4,7 +4,7 @@ part 'notification.freezed.dart';
 part 'notification.g.dart';
 
 @freezed
-class AppNotification with _$AppNotification {
+abstract class AppNotification with _$AppNotification {
   const factory AppNotification({
     required String id,
     required String user_id,

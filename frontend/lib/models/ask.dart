@@ -4,7 +4,7 @@ part 'ask.freezed.dart';
 part 'ask.g.dart';
 
 @freezed
-class Ask with _$Ask {
+abstract class Ask with _$Ask {
   const factory Ask({
     required String id,
     required String requester_id,
@@ -25,7 +25,7 @@ class Ask with _$Ask {
 }
 
 @freezed
-class Reply with _$Reply {
+abstract class Reply with _$Reply {
   const factory Reply({
     required String id,
     required String ask_id,

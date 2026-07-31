@@ -4,7 +4,7 @@ part 'friend.freezed.dart';
 part 'friend.g.dart';
 
 @freezed
-class UserSearchResponse with _$UserSearchResponse {
+abstract class UserSearchResponse with _$UserSearchResponse {
   const factory UserSearchResponse({
     required String id,
     required String username,
@@ -17,7 +17,7 @@ class UserSearchResponse with _$UserSearchResponse {
 }
 
 @freezed
-class PendingRequestResponse with _$PendingRequestResponse {
+abstract class PendingRequestResponse with _$PendingRequestResponse {
   const factory PendingRequestResponse({
     required String request_id,
     required String username,
@@ -30,7 +30,7 @@ class PendingRequestResponse with _$PendingRequestResponse {
 }
 
 @freezed
-class FriendResponse with _$FriendResponse {
+abstract class FriendResponse with _$FriendResponse {
   const factory FriendResponse({
     required String id,
     required String username,

@@ -9,7 +9,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<User?>>((ref
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   final AuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(const AsyncValue.loading());
+  AuthNotifier(this._repository) : super(const AsyncValue.data(null));
 
   Future<void> checkAuth() async {
     state = const AsyncValue.loading();

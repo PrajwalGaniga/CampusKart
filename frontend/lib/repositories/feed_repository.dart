@@ -18,25 +18,29 @@ class FeedRepository {
     return (response.data as List).map((e) => Ask.fromJson(e)).toList();
   }
 
+  Future<List<Ask>> getMyAsks() async {
+    final response = await _dio.get(ApiConstants.asksMy);
+    return (response.data as List).map((e) => Ask.fromJson(e)).toList();
+  }
+
   Future<Ask> createAsk(Map<String, dynamic> data) async {
     final response = await _dio.post(ApiConstants.asks, data: data);
     return Ask.fromJson(response.data);
   }
 
-  Future<List<Reply>> getReplies(int askId) async {
+  Future<List<Reply>> getReplies(String askId) async {
     final response = await _dio.get(ApiConstants.askReplies(askId));
     return (response.data as List).map((e) => Reply.fromJson(e)).toList();
   }
 
-  Future<Reply> createReply(int askId, String message) async {
-    final response = await _dio.post(
+  Future<void> createReply(String askId, String message) async {
+    await _dio.post(
       ApiConstants.askReply(askId),
       data: {'message': message},
     );
-    return Reply.fromJson(response.data);
   }
 
-  Future<void> resolveAsk(int askId, String replyId) async {
+  Future<void> resolveAsk(String askId, String replyId) async {
     await _dio.post(
       ApiConstants.askResolve(askId),
       data: {'reply_id': replyId},

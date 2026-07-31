@@ -36,15 +36,15 @@ class FriendRepository {
   }
 
   Future<void> acceptRequest(int requestId) async {
-    await _dio.post(ApiConstants.acceptRequest(requestId));
+    await _dio.post(ApiConstants.acceptRequest, data: {'request_id': requestId.toString()});
   }
 
   Future<void> rejectRequest(int requestId) async {
-    await _dio.post(ApiConstants.rejectRequest(requestId));
+    await _dio.post(ApiConstants.rejectRequest, data: {'request_id': requestId.toString()});
   }
 
   Future<void> cancelRequest(int requestId) async {
-    await _dio.post(ApiConstants.cancelRequest(requestId));
+    await _dio.post(ApiConstants.cancelRequest, data: {'request_id': requestId.toString()});
   }
 
   Future<void> removeFriend(int friendId) async {

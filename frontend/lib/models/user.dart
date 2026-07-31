@@ -4,7 +4,7 @@ part 'user.freezed.dart';
 part 'user.g.dart';
 
 @freezed
-class User with _$User {
+abstract class User with _$User {
   const factory User({
     required String id,
     required String username,
@@ -22,7 +22,7 @@ class User with _$User {
 }
 
 @freezed
-class AuthToken with _$AuthToken {
+abstract class AuthToken with _$AuthToken {
   const factory AuthToken({
     required String access_token,
     required String token_type,
