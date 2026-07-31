@@ -14,6 +14,8 @@ class User(Document):
     password_hash: str
     
     profile_picture: str = ""
+    bio: str = ""
+    
     
     department: str
     year: int

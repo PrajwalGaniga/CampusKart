@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get username; String get display_name; String get email; String get role; String get status; String? get profile_picture; String? get department; int? get year; String? get section;
+ String get id; String get username; String get display_name; String get email; String get role; String get status; String? get profile_picture; String? get department; int? get year; String? get section; String get bio; int get friends_count; int get asks_count; int get helps_count;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.profile_picture, profile_picture) || other.profile_picture == profile_picture)&&(identical(other.department, department) || other.department == department)&&(identical(other.year, year) || other.year == year)&&(identical(other.section, section) || other.section == section));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.profile_picture, profile_picture) || other.profile_picture == profile_picture)&&(identical(other.department, department) || other.department == department)&&(identical(other.year, year) || other.year == year)&&(identical(other.section, section) || other.section == section)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.friends_count, friends_count) || other.friends_count == friends_count)&&(identical(other.asks_count, asks_count) || other.asks_count == asks_count)&&(identical(other.helps_count, helps_count) || other.helps_count == helps_count));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,display_name,email,role,status,profile_picture,department,year,section);
+int get hashCode => Object.hash(runtimeType,id,username,display_name,email,role,status,profile_picture,department,year,section,bio,friends_count,asks_count,helps_count);
 
 @override
 String toString() {
-  return 'User(id: $id, username: $username, display_name: $display_name, email: $email, role: $role, status: $status, profile_picture: $profile_picture, department: $department, year: $year, section: $section)';
+  return 'User(id: $id, username: $username, display_name: $display_name, email: $email, role: $role, status: $status, profile_picture: $profile_picture, department: $department, year: $year, section: $section, bio: $bio, friends_count: $friends_count, asks_count: $asks_count, helps_count: $helps_count)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String username, String display_name, String email, String role, String status, String? profile_picture, String? department, int? year, String? section
+ String id, String username, String display_name, String email, String role, String status, String? profile_picture, String? department, int? year, String? section, String bio, int friends_count, int asks_count, int helps_count
 });
 
 
@@ -65,7 +65,7 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? email = null,Object? role = null,Object? status = null,Object? profile_picture = freezed,Object? department = freezed,Object? year = freezed,Object? section = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? email = null,Object? role = null,Object? status = null,Object? profile_picture = freezed,Object? department = freezed,Object? year = freezed,Object? section = freezed,Object? bio = null,Object? friends_count = null,Object? asks_count = null,Object? helps_count = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
@@ -77,7 +77,11 @@ as String,profile_picture: freezed == profile_picture ? _self.profile_picture : 
 as String?,department: freezed == department ? _self.department : department // ignore: cast_nullable_to_non_nullable
 as String?,year: freezed == year ? _self.year : year // ignore: cast_nullable_to_non_nullable
 as int?,section: freezed == section ? _self.section : section // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,bio: null == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
+as String,friends_count: null == friends_count ? _self.friends_count : friends_count // ignore: cast_nullable_to_non_nullable
+as int,asks_count: null == asks_count ? _self.asks_count : asks_count // ignore: cast_nullable_to_non_nullable
+as int,helps_count: null == helps_count ? _self.helps_count : helps_count // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -162,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String email,  String role,  String status,  String? profile_picture,  String? department,  int? year,  String? section)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String email,  String role,  String status,  String? profile_picture,  String? department,  int? year,  String? section,  String bio,  int friends_count,  int asks_count,  int helps_count)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.username,_that.display_name,_that.email,_that.role,_that.status,_that.profile_picture,_that.department,_that.year,_that.section);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.email,_that.role,_that.status,_that.profile_picture,_that.department,_that.year,_that.section,_that.bio,_that.friends_count,_that.asks_count,_that.helps_count);case _:
   return orElse();
 
 }
@@ -183,10 +187,10 @@ return $default(_that.id,_that.username,_that.display_name,_that.email,_that.rol
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String email,  String role,  String status,  String? profile_picture,  String? department,  int? year,  String? section)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String username,  String display_name,  String email,  String role,  String status,  String? profile_picture,  String? department,  int? year,  String? section,  String bio,  int friends_count,  int asks_count,  int helps_count)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.username,_that.display_name,_that.email,_that.role,_that.status,_that.profile_picture,_that.department,_that.year,_that.section);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.email,_that.role,_that.status,_that.profile_picture,_that.department,_that.year,_that.section,_that.bio,_that.friends_count,_that.asks_count,_that.helps_count);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +207,10 @@ return $default(_that.id,_that.username,_that.display_name,_that.email,_that.rol
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String username,  String display_name,  String email,  String role,  String status,  String? profile_picture,  String? department,  int? year,  String? section)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String username,  String display_name,  String email,  String role,  String status,  String? profile_picture,  String? department,  int? year,  String? section,  String bio,  int friends_count,  int asks_count,  int helps_count)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.username,_that.display_name,_that.email,_that.role,_that.status,_that.profile_picture,_that.department,_that.year,_that.section);case _:
+return $default(_that.id,_that.username,_that.display_name,_that.email,_that.role,_that.status,_that.profile_picture,_that.department,_that.year,_that.section,_that.bio,_that.friends_count,_that.asks_count,_that.helps_count);case _:
   return null;
 
 }
@@ -218,7 +222,7 @@ return $default(_that.id,_that.username,_that.display_name,_that.email,_that.rol
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.username, required this.display_name, required this.email, required this.role, required this.status, this.profile_picture, this.department, this.year, this.section});
+  const _User({required this.id, required this.username, required this.display_name, required this.email, required this.role, required this.status, this.profile_picture, this.department, this.year, this.section, this.bio = "", this.friends_count = 0, this.asks_count = 0, this.helps_count = 0});
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  String id;
@@ -231,6 +235,10 @@ class _User implements User {
 @override final  String? department;
 @override final  int? year;
 @override final  String? section;
+@override@JsonKey() final  String bio;
+@override@JsonKey() final  int friends_count;
+@override@JsonKey() final  int asks_count;
+@override@JsonKey() final  int helps_count;
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.profile_picture, profile_picture) || other.profile_picture == profile_picture)&&(identical(other.department, department) || other.department == department)&&(identical(other.year, year) || other.year == year)&&(identical(other.section, section) || other.section == section));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.display_name, display_name) || other.display_name == display_name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.profile_picture, profile_picture) || other.profile_picture == profile_picture)&&(identical(other.department, department) || other.department == department)&&(identical(other.year, year) || other.year == year)&&(identical(other.section, section) || other.section == section)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.friends_count, friends_count) || other.friends_count == friends_count)&&(identical(other.asks_count, asks_count) || other.asks_count == asks_count)&&(identical(other.helps_count, helps_count) || other.helps_count == helps_count));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,display_name,email,role,status,profile_picture,department,year,section);
+int get hashCode => Object.hash(runtimeType,id,username,display_name,email,role,status,profile_picture,department,year,section,bio,friends_count,asks_count,helps_count);
 
 @override
 String toString() {
-  return 'User(id: $id, username: $username, display_name: $display_name, email: $email, role: $role, status: $status, profile_picture: $profile_picture, department: $department, year: $year, section: $section)';
+  return 'User(id: $id, username: $username, display_name: $display_name, email: $email, role: $role, status: $status, profile_picture: $profile_picture, department: $department, year: $year, section: $section, bio: $bio, friends_count: $friends_count, asks_count: $asks_count, helps_count: $helps_count)';
 }
 
 
@@ -265,7 +273,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String username, String display_name, String email, String role, String status, String? profile_picture, String? department, int? year, String? section
+ String id, String username, String display_name, String email, String role, String status, String? profile_picture, String? department, int? year, String? section, String bio, int friends_count, int asks_count, int helps_count
 });
 
 
@@ -282,7 +290,7 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? email = null,Object? role = null,Object? status = null,Object? profile_picture = freezed,Object? department = freezed,Object? year = freezed,Object? section = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? display_name = null,Object? email = null,Object? role = null,Object? status = null,Object? profile_picture = freezed,Object? department = freezed,Object? year = freezed,Object? section = freezed,Object? bio = null,Object? friends_count = null,Object? asks_count = null,Object? helps_count = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
@@ -294,7 +302,11 @@ as String,profile_picture: freezed == profile_picture ? _self.profile_picture : 
 as String?,department: freezed == department ? _self.department : department // ignore: cast_nullable_to_non_nullable
 as String?,year: freezed == year ? _self.year : year // ignore: cast_nullable_to_non_nullable
 as int?,section: freezed == section ? _self.section : section // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,bio: null == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
+as String,friends_count: null == friends_count ? _self.friends_count : friends_count // ignore: cast_nullable_to_non_nullable
+as int,asks_count: null == asks_count ? _self.asks_count : asks_count // ignore: cast_nullable_to_non_nullable
+as int,helps_count: null == helps_count ? _self.helps_count : helps_count // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

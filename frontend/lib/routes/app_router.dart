@@ -6,6 +6,7 @@ import '../features/auth/splash_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/feed/create_ask_screen.dart';
 import '../features/activity/activity_screen.dart';
+import '../features/profile/edit_profile_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -36,6 +37,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/activity-logs',
       builder: (context, state) => const ActivityLogsScreen(),
+    ),
+    GoRoute(
+      path: '/edit-profile',
+      builder: (context, state) => const EditProfileScreen(),
     ),
   ],
 );

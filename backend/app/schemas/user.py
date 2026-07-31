@@ -26,6 +26,10 @@ class UserResponse(BaseModel):
     email: str
     role: str
     status: str
+    bio: str = ""
+    friends_count: int = 0
+    asks_count: int = 0
+    helps_count: int = 0
     
     class Config:
         from_attributes = True
@@ -36,6 +40,7 @@ class UserUpdate(BaseModel):
     year: Optional[int] = None
     section: Optional[str] = None
     profile_picture: Optional[str] = None
+    bio: Optional[str] = None
 
 class PasswordChange(BaseModel):
     old_password: str

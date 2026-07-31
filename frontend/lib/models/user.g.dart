@@ -17,6 +17,10 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   department: json['department'] as String?,
   year: (json['year'] as num?)?.toInt(),
   section: json['section'] as String?,
+  bio: json['bio'] as String? ?? "",
+  friends_count: (json['friends_count'] as num?)?.toInt() ?? 0,
+  asks_count: (json['asks_count'] as num?)?.toInt() ?? 0,
+  helps_count: (json['helps_count'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
@@ -30,6 +34,10 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'department': instance.department,
   'year': instance.year,
   'section': instance.section,
+  'bio': instance.bio,
+  'friends_count': instance.friends_count,
+  'asks_count': instance.asks_count,
+  'helps_count': instance.helps_count,
 };
 
 _AuthToken _$AuthTokenFromJson(Map<String, dynamic> json) => _AuthToken(

@@ -3,6 +3,9 @@ from typing import List, Dict, Any
 from app.schemas.ask import AskResponse
 from app.models.ask import Ask
 from app.models.user import User
+from app.models.friendship import Friendship
+from app.models.activity_log import ActivityLog
+import random
 
 router = APIRouter()
 
@@ -62,4 +65,49 @@ async def get_public_stats():
         "online_users": online_users,
         "total_events": total_events,
         "average_response_time": avg_response_time
+    }
+
+@router.get("/network", response_model=Dict[str, Any])
+async def get_public_network():
+    """
+    Get an anonymized graph of users and friendships for the dashboard.
+    """
+    users = await User.find_all().to_list()
+    friendships = await Friendship.find_all().to_list()
+    
+    nodes = []
+    edges = []
+    
+    for u in users:
+        nodes.append({
+            "id": str(u.id),
+            "status": u.status
+        })
+        
+    for f in friendships:
+        edges.append({
+            "source": f.user1,
+            "target": f.user2
+        })
+        
+    return {
+        "nodes": nodes,
+        "edges": edges
+    }
+
+@router.get("/health", response_model=Dict[str, Any])
+async def get_public_health():
+    """
+    Mocked health statuses for the dashboard aesthetic.
+    """
+    # Mocking some latency jitter
+    latency = random.randint(15, 60)
+    
+    return {
+        "api_status": "operational",
+        "api_latency": f"{latency}ms",
+        "db_status": "operational",
+        "kubernetes_status": "operational",
+        "docker_status": "operational",
+        "websocket_status": "operational"
     }

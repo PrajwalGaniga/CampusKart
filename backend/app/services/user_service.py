@@ -7,7 +7,7 @@ async def get_profile(user_id: str) -> UserResponse:
     user = await User.get(user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return _map_to_response(user)
+    return await _map_to_response(user)
 
 async def update_profile(user_id: str, data: UserUpdate) -> UserResponse:
     user = await User.get(user_id)
@@ -16,13 +16,13 @@ async def update_profile(user_id: str, data: UserUpdate) -> UserResponse:
     
     update_data = data.model_dump(exclude_unset=True)
     if not update_data:
-        return _map_to_response(user)
+        return await _map_to_response(user)
         
     for key, value in update_data.items():
         setattr(user, key, value)
         
     await user.save()
-    return _map_to_response(user)
+    return await _map_to_response(user)
 
 async def change_password(user_id: str, data: PasswordChange) -> dict:
     user = await User.get(user_id)
@@ -37,12 +37,22 @@ async def change_password(user_id: str, data: PasswordChange) -> dict:
     
     return {"success": True, "message": "Password changed successfully"}
 
-def _map_to_response(user: User) -> UserResponse:
+async def _map_to_response(user: User) -> UserResponse:
+    from app.models.ask import Ask
+    from app.models.reply import Reply
+    
+    asks_count = await Ask.find(Ask.requester_id == str(user.id)).count()
+    helps_count = await Reply.find(Reply.responder_id == str(user.id)).count()
+
     return UserResponse(
         id=str(user.id),
         username=user.username,
         display_name=user.display_name,
         email=user.email,
         role=user.role,
-        status=user.status
+        status=user.status,
+        bio=user.bio,
+        friends_count=user.friends_count,
+        asks_count=asks_count,
+        helps_count=helps_count
     )

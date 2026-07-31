@@ -470,7 +470,7 @@ class _RepliesList extends ConsumerWidget {
                                       : 'http://127.0.0.1:8000${reply.responder_image}',
                                 )
                               : null,
-                          onBackgroundImageError: (error, stackTrace) {},
+                          onBackgroundImageError: reply.responder_image.isNotEmpty ? (error, stackTrace) {} : null,
                           child: reply.responder_image.isEmpty
                               ? Text(
                                   reply.responder_name.isNotEmpty ? reply.responder_name[0].toUpperCase() : '?',

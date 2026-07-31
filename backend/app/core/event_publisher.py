@@ -18,13 +18,29 @@ class EventPublisher:
     # ──────────────────────────────────────────────
 
     async def publish_ask_created(self, ask_id: str, requester_id: str, ask_data: dict):
-        """Broadcast new ask to the public dashboard."""
+        """Broadcast new ask to the public dashboard and privately to friends."""
         logger.info(f"[EVENT] ask_created ask_id={ask_id}")
+        
+        # Broadcast to public dashboard
         await manager.broadcast_public("ask_created", {
             "ask_id": ask_id,
             "requester_id": requester_id,
             **ask_data
         })
+        
+        # Private broadcast only to friends
+        try:
+            from app.repositories import friend_repository as friend_repo
+            friends = await friend_repo.list_friends(requester_id)
+            for f in friends:
+                friend_id = f.user2 if f.user1 == requester_id else f.user1
+                await manager.send_to_user(friend_id, "ask_created", {
+                    "ask_id": ask_id,
+                    "requester_id": requester_id,
+                    **ask_data
+                })
+        except Exception as e:
+            logger.error(f"Failed to push private ask_created to friends: {e}")
 
     async def publish_reply_created(self, ask_id: str, reply_id: str, responder_id: str):
         """Tell the ask requester that a reply arrived."""

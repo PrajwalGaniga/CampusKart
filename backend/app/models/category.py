@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from beanie import Document
 import pymongo
 from pymongo import IndexModel, ASCENDING

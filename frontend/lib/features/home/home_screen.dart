@@ -5,6 +5,7 @@ import '../friends/friends_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../services/websocket_service.dart';
+import '../../providers/ws_handler_provider.dart';
 import '../../core/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -29,6 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(webSocketServiceProvider).connect();
+      ref.read(wsHandlerProvider); // Initialize the WS handler to listen to events
     });
   }
 

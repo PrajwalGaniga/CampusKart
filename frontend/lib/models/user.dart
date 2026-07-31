@@ -17,6 +17,10 @@ abstract class User with _$User {
     String? department,
     int? year,
     String? section,
+    @Default("") String bio,
+    @Default(0) int friends_count,
+    @Default(0) int asks_count,
+    @Default(0) int helps_count,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

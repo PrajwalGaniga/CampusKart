@@ -18,3 +18,8 @@ scratch/
 audit/
 temp/
 .pytest_cache/
+
+# Root level reports and scratch files
+/*.txt
+/*.md
+!/README.md

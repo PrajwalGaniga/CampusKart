@@ -35,13 +35,23 @@ class ProfileScreen extends ConsumerWidget {
                           alignment: Alignment.topRight,
                           child: Padding(
                             padding: const EdgeInsets.all(8),
-                            child: IconButton(
-                              icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                              tooltip: 'Logout',
-                              onPressed: () async {
-                                await ref.read(authProvider.notifier).logout();
-                                if (context.mounted) context.go('/login');
-                              },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                                  tooltip: 'Edit Profile',
+                                  onPressed: () => context.push('/edit-profile'),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                                  tooltip: 'Logout',
+                                  onPressed: () async {
+                                    await ref.read(authProvider.notifier).logout();
+                                    if (context.mounted) context.go('/login');
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -113,6 +123,18 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      if (user.bio.isNotEmpty) ...[
+                        Text(
+                          user.bio,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Stats row
                       Container(
@@ -122,21 +144,21 @@ class ProfileScreen extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _StatItem(
-                              label: 'Department',
-                              value: user.department ?? 'N/A',
-                              icon: Icons.school_rounded,
+                              label: 'Friends',
+                              value: user.friends_count.toString(),
+                              icon: Icons.people_rounded,
                             ),
                             _VerticalDivider(),
                             _StatItem(
-                              label: 'Year',
-                              value: user.year?.toString() ?? 'N/A',
-                              icon: Icons.calendar_today_rounded,
+                              label: 'Asks',
+                              value: user.asks_count.toString(),
+                              icon: Icons.post_add_rounded,
                             ),
                             _VerticalDivider(),
                             _StatItem(
-                              label: 'Section',
-                              value: user.section ?? 'N/A',
-                              icon: Icons.groups_rounded,
+                              label: 'Helps',
+                              value: user.helps_count.toString(),
+                              icon: Icons.handshake_rounded,
                             ),
                           ],
                         ),

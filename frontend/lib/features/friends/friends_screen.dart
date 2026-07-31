@@ -372,8 +372,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
-                        onPressed: () =>
-                            ref.read(pendingRequestsProvider.notifier).acceptRequest(req.request_id),
+                        onPressed: () async {
+                              await ref.read(pendingRequestsProvider.notifier).acceptRequest(req.request_id);
+                              ref.read(friendsProvider.notifier).fetchFriends();
+                            },
                         style: IconButton.styleFrom(
                           backgroundColor: AppColors.success,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
