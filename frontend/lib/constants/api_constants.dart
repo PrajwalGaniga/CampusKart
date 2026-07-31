@@ -2,15 +2,11 @@ import 'package:flutter/foundation.dart';
 
 class ApiConstants {
   static String get baseUrl {
-    if (kIsWeb) return 'http://127.0.0.1:8000';
-    if (defaultTargetPlatform == TargetPlatform.android) return 'http://10.0.2.2:8000';
-    return 'http://127.0.0.1:8000';
+    return 'https://dawdlingly-pseudoinsane-pa.ngrok-free.dev';
   }
 
   static String get wsUrl {
-    if (kIsWeb) return 'ws://127.0.0.1:8000/ws/private';
-    if (defaultTargetPlatform == TargetPlatform.android) return 'ws://10.0.2.2:8000/ws/private';
-    return 'ws://127.0.0.1:8000/ws/private';
+    return 'wss://dawdlingly-pseudoinsane-pa.ngrok-free.dev/ws/private';
   }
 
   static const String login = '/api/v1/auth/login';
