@@ -9,6 +9,7 @@ pipeline {
         FRONTEND_IMAGE = "campuskart-frontend:latest"
     }
 
+    stages {
         stage('Checkout') {
             steps {
                 checkout scm
