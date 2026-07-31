@@ -21,12 +21,10 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    // In Minikube, to make images available locally without a registry, we point docker-cli to Minikube's docker daemon.
-                    // If Jenkins is running on WSL, this will use the minikube docker-env.
-                    sh '''
-                    eval $(minikube docker-env)
-                    docker build -t $BACKEND_IMAGE ./backend
-                    docker build -t $FRONTEND_IMAGE ./public-view
+                    // Jenkins is on Windows, so we use 'bat' instead of 'sh'.
+                    // We run our build commands inside WSL so they use Minikube's Docker daemon.
+                    bat '''
+                    wsl -- bash -c "eval \\$(minikube -p minikube docker-env) && docker build -t campuskart-backend:latest ./backend && docker build -t campuskart-frontend:latest ./public-view"
                     '''
                 }
             }
@@ -34,19 +32,19 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh '''
-                kubectl apply -f k8s/mongodb.yaml
-                kubectl apply -f k8s/backend.yaml
-                kubectl apply -f k8s/frontend.yaml
+                bat '''
+                wsl -- kubectl apply -f k8s/mongodb.yaml
+                wsl -- kubectl apply -f k8s/backend.yaml
+                wsl -- kubectl apply -f k8s/frontend.yaml
                 '''
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh '''
-                kubectl get pods
-                kubectl get svc
+                bat '''
+                wsl -- kubectl get pods
+                wsl -- kubectl get svc
                 '''
             }
         }
