@@ -2,6 +2,21 @@ from fastapi import HTTPException, status
 from app.models.notification import Notification
 from app.schemas.notification import NotificationResponse
 from typing import List
+from app.core.event_publisher import event_publisher
+
+async def create_notification(user_id: str, title: str, message: str, type: str) -> NotificationResponse:
+    notification = Notification(
+        user_id=user_id,
+        title=title,
+        message=message,
+        type=type
+    )
+    await notification.insert()
+    
+    # Push real-time notification to the user via WebSocket
+    await event_publisher.send_notification(user_id, title, message, type)
+    
+    return _map_to_response(notification)
 
 async def list_notifications(user_id: str) -> List[NotificationResponse]:
     # Sort by newest first

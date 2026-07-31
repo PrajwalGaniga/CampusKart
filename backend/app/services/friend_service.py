@@ -6,7 +6,7 @@ from app.schemas.friend import (
     PendingRequestResponse, FriendResponse
 )
 from app.repositories import friend_repository as friend_repo
-from app.repositories import notification_repository as notif_repo
+from app.services import notification_service
 from app.repositories import activity_repository as act_repo
 
 async def search_users(query: str, current_user: User) -> List[UserSearchResponse]:
@@ -51,7 +51,7 @@ async def send_friend_request(req: FriendRequestCreate, current_user: User):
     fr = await friend_repo.create_friend_request(sender_id, receiver_id)
     
     # Notification & Activity
-    await notif_repo.create_notification(
+    await notification_service.create_notification(
         user_id=receiver_id,
         title="New Friend Request",
         message=f"{current_user.display_name} sent you a friend request",
@@ -113,7 +113,7 @@ async def accept_request(action: FriendRequestAction, current_user: User):
     await friend_repo.increment_friend_count(req.sender_id)
     await friend_repo.increment_friend_count(req.receiver_id)
     
-    await notif_repo.create_notification(
+    await notification_service.create_notification(
         user_id=req.sender_id,
         title="Friend Request Accepted",
         message=f"{current_user.display_name} accepted your friend request",
@@ -141,7 +141,7 @@ async def reject_request(action: FriendRequestAction, current_user: User):
     req.status = "REJECTED"
     await friend_repo.update_friend_request(req)
     
-    await notif_repo.create_notification(
+    await notification_service.create_notification(
         user_id=req.sender_id,
         title="Friend Request Rejected",
         message=f"{current_user.display_name} rejected your friend request",
@@ -185,7 +185,7 @@ async def remove_friend(friend_id: str, current_user: User):
     )
     
     # Notify friend
-    await notif_repo.create_notification(
+    await notification_service.create_notification(
         user_id=friend_id,
         title="Friend Removed",
         message=f"{current_user.display_name} has removed you from their friends list",

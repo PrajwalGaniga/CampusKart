@@ -71,6 +71,15 @@ class ProfileScreen extends ConsumerWidget {
                         title: const Text('Status'),
                         subtitle: Text(user.status),
                       ),
+                      const Divider(),
+                      ListTile(
+                        leading: const Icon(Icons.history, color: Colors.blue),
+                        title: const Text('View Activity Logs'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          context.push('/activity-logs');
+                        },
+                      ),
                     ],
                   ),
                 ),

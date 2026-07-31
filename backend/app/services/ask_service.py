@@ -7,7 +7,7 @@ from app.schemas.ask import AskCreate, AskResponse, ReplyCreate, ReplyResponse
 from app.repositories import ask_repository as ask_repo
 from app.repositories import reply_repository as reply_repo
 from app.repositories import friend_repository as friend_repo
-from app.repositories import notification_repository as notif_repo
+from app.services import notification_service
 from app.repositories import activity_repository as act_repo
 from app.core.event_publisher import event_publisher
 from app.core.config import settings
@@ -124,7 +124,7 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
     
     await event_publisher.publish_reply_created(ask_id, str(reply.id), str(current_user.id))
     
-    await notif_repo.create_notification(
+    await notification_service.create_notification(
         user_id=ask.requester_id,
         title="New Reply",
         message=f"{current_user.display_name} replied to your ask: {ask.title}",
@@ -139,7 +139,7 @@ async def reply_to_ask(ask_id: str, req: ReplyCreate, current_user: User):
     
     if new_count >= ask.max_replies:
         await event_publisher.publish_ask_locked(ask_id)
-        await notif_repo.create_notification(
+        await notification_service.create_notification(
             user_id=ask.requester_id,
             title="Ask Locked",
             message=f"Your ask '{ask.title}' has reached the maximum number of replies and is now locked.",
@@ -200,6 +200,16 @@ async def resolve_ask(ask_id: str, reply_id: str, current_user: User):
         raise HTTPException(status_code=400, detail="Failed to resolve ask")
         
     await event_publisher.publish_ask_resolved(ask_id, reply_id)
+    
+    # Notify the helper
+    reply = await reply_repo.find_reply_by_id(reply_id)
+    if reply:
+        await notification_service.create_notification(
+            user_id=reply.responder_id,
+            title="Ask Resolved",
+            message=f"Your reply to '{ask.title}' was accepted! Ask is resolved.",
+            type="ASK_RESOLVED"
+        )
     
     await act_repo.create_activity_log(
         user_id=str(current_user.id),

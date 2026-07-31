@@ -65,10 +65,10 @@
 
 ## 8. Notifications
 - Model: ✅ IMPLEMENTED
-- Repository: ⚠ PARTIALLY IMPLEMENTED (Basic create only)
-- Service: ❌ NOT IMPLEMENTED
+- Repository: ✅ IMPLEMENTED
+- Service: ✅ IMPLEMENTED
 - Storage: ✅ IMPLEMENTED
-- API: ❌ NOT IMPLEMENTED
+- API: ✅ IMPLEMENTED
 
 ## 9. Activity Logs
 - Model: ✅ IMPLEMENTED
@@ -142,7 +142,7 @@ Friend Management ..... 90%
 Ask Module ............ 90%
 Reply Module .......... 100%
 WebSockets ............ 80%
-Notifications ......... 20%
+Notifications ......... 100%
 Activity Logs ......... 40%
 Docker ................. 100%
 ---------------------------
@@ -164,11 +164,10 @@ Backend Overall ....... ~75%
 ========================
 - User Profile APIs (Get Profile, Update Profile)
 - Logout / Refresh Token Rotation
-- Notifications Service & APIs
 - Activity Logs Service
 - WebSocket syncing Online status to DB
 
 ========================
 ## NEXT DEVELOPMENT STEP
 ========================
-**Notifications Module (Service + APIs + WS Integration)**
+**Activity Logs Module (Service + APIs)**

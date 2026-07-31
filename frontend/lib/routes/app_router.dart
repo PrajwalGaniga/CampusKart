@@ -5,6 +5,7 @@ import '../features/auth/register_screen.dart';
 import '../features/auth/splash_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/feed/create_ask_screen.dart';
+import '../features/activity/activity_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -31,6 +32,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/create-ask',
       builder: (context, state) => const CreateAskScreen(),
+    ),
+    GoRoute(
+      path: '/activity-logs',
+      builder: (context, state) => const ActivityLogsScreen(),
     ),
   ],
 );
