@@ -192,6 +192,22 @@ class _AskCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Author Info
+                  Row(
+                    children: [
+                      UserAvatar(profilePicture: ask.requester_image, radius: 14),
+                      const SizedBox(width: 8),
+                      Text(
+                        ask.requester_name,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   // Header row
                   Row(
                     children: [

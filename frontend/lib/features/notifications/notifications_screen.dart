@@ -111,10 +111,10 @@ class NotificationsScreen extends ConsumerWidget {
                                 top: 4,
                                 bottom: 4,
                               ),
-                              leading: notif.sender_avatar.isNotEmpty
-                                  ? UserAvatar(profilePicture: notif.sender_avatar, radius: 21)
-                                  : matchingRequest != null 
-                                      ? UserAvatar(profilePicture: matchingRequest.profile_image, radius: 21)
+                              leading: matchingRequest != null
+                                  ? UserAvatar(profilePicture: matchingRequest.profile_image, radius: 21)
+                                  : notif.sender_avatar.isNotEmpty
+                                      ? UserAvatar(profilePicture: notif.sender_avatar, radius: 21)
                                       : Container(
                                       width: 42,
                                       height: 42,

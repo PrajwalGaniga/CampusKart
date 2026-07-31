@@ -26,5 +26,6 @@ class FriendResponse(BaseModel):
     id: str
     username: str
     display_name: str
+    profile_image: str
     status: str
     friends_since: str

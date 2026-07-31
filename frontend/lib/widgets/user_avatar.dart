@@ -21,6 +21,8 @@ class UserAvatar extends StatelessWidget {
       imageProvider = NetworkImage(profilePicture!);
     } else if (profilePicture!.startsWith('assets/avatars/')) {
       imageProvider = NetworkImage('${ApiConstants.baseUrl}/static/avatars/${profilePicture!.split('/').last}');
+    } else if (profilePicture!.startsWith('/static/avatars/')) {
+      imageProvider = NetworkImage('${ApiConstants.baseUrl}$profilePicture');
     } else if (profilePicture!.endsWith('.jpg') || profilePicture!.endsWith('.png')) {
       // Handles cases like "2.jpg"
       imageProvider = NetworkImage('${ApiConstants.baseUrl}/static/avatars/$profilePicture');

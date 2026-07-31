@@ -18,7 +18,4 @@ class Reply(Document):
     created_at: datetime = Field(default_factory=utc_now)
 
     class Settings:
-        name = "replies"
-        indexes = [
-            IndexModel([("ask_id", ASCENDING), ("responder_id", ASCENDING)], unique=True)
-        ]
+        name = "replies"

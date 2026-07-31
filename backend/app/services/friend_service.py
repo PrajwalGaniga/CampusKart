@@ -224,6 +224,7 @@ async def list_friends(current_user: User) -> List[FriendResponse]:
                 id=str(friend_user.id),
                 username=friend_user.username,
                 display_name=friend_user.display_name,
+                profile_image=friend_user.profile_picture,
                 status=friend_user.status,
                 friends_since=f.created_at.isoformat()
             ))
