@@ -23,7 +23,16 @@ export default function UserUniverse({ users }: UserUniverseProps) {
     if (!url) return null;
     if (url.startsWith('http')) return url;
     if (url.startsWith('/avatars')) return url; // Frontend mock avatars
-    return `${API_BASE_URL}${url}`;
+    
+    // Database returns "1.jpg". Use local frontend public folder to bypass ngrok image blocking.
+    if (!url.includes('/')) {
+      return `/avatars/${url}`;
+    }
+    
+    // Fallback for other backend paths
+    const base = API_BASE_URL.replace(/\/$/, '');
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${base}${path}`;
   };
 
   const getStatusText = (state: string) => {
