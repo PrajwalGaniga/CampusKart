@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserStatus } from '../../types';
+import { API_BASE_URL } from '../../config';
 import styles from '../../pages/Dashboard.module.css';
 
 interface LiveClusterWorkspaceProps {
@@ -14,6 +15,14 @@ export default function LiveClusterWorkspace({ activeClusters, users, isSimulati
 
   // Helper to find a user by ID
   const getUser = (id: string) => users.find(u => u.id === id);
+
+  // Helper to resolve avatar URL
+  const resolveAvatar = (url?: string) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/avatars')) return url; // Frontend mock avatars
+    return `${API_BASE_URL}${url}`;
+  };
 
   // Dynamic zoom effect based on number of active clusters
   const scale = Math.max(0.4, 1 - (clusters.length * 0.1));
@@ -75,12 +84,19 @@ export default function LiveClusterWorkspace({ activeClusters, users, isSimulati
                       </AnimatePresence>
                     </svg>
 
-                    <div className={styles.clusterCenter}>
-                      {askerUser?.avatar ? (
-                        <img src={askerUser.avatar} alt={askerUser.name} className={styles.clusterCenterImage} />
-                      ) : (
-                        askerUser?.name.charAt(0).toUpperCase() || '?'
-                      )}
+                    <div className={styles.clusterCenter} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div className={styles.clusterCenterImageContainer} style={{ width: '100%', height: '100%', position: 'relative' }}>
+                        {resolveAvatar(askerUser?.avatar) ? (
+                          <img src={resolveAvatar(askerUser?.avatar)!} alt={askerUser?.name} className={styles.clusterCenterImage} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e5e7eb', borderRadius: '50%', color: '#374151', fontWeight: 'bold' }}>
+                            {askerUser?.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ position: 'absolute', bottom: '-20px', fontSize: '0.7rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap', backgroundColor: 'rgba(255,255,255,0.8)', padding: '2px 6px', borderRadius: '4px' }}>
+                        {askerUser?.name || 'Unknown'}
+                      </div>
                     </div>
                     
                     <AnimatePresence>
@@ -103,11 +119,18 @@ export default function LiveClusterWorkspace({ activeClusters, users, isSimulati
                             className={`${styles.clusterReplier} ${isMatched ? styles.clusterReplierMatched : ''}`}
                             style={{ top: '50%', left: '50%' }}
                           >
-                            {replierUser?.avatar ? (
-                              <img src={replierUser.avatar} alt={replierUser.name} className={styles.clusterReplierImage} />
-                            ) : (
-                              replierUser?.name.charAt(0).toUpperCase() || '?'
-                            )}
+                            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                              {resolveAvatar(replierUser?.avatar) ? (
+                                <img src={resolveAvatar(replierUser?.avatar)!} alt={replierUser?.name} className={styles.clusterReplierImage} />
+                              ) : (
+                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e5e7eb', borderRadius: '50%', color: '#374151', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                                  {replierUser?.name?.charAt(0).toUpperCase() || '?'}
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.65rem', fontWeight: 500, color: '#4B5563', whiteSpace: 'nowrap', backgroundColor: 'rgba(255,255,255,0.8)', padding: '2px 4px', borderRadius: '4px' }}>
+                              {replierUser?.name || 'Unknown'}
+                            </div>
                           </motion.div>
                         );
                       })}

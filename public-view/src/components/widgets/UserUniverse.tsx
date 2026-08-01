@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserStatus } from '../../types';
+import { API_BASE_URL } from '../../config';
 import styles from '../../pages/Dashboard.module.css';
 
 interface UserUniverseProps {
@@ -16,6 +17,13 @@ export default function UserUniverse({ users }: UserUniverseProps) {
       case 'resolved': return styles.statusBlue;
       default: return styles.statusGreen;
     }
+  };
+
+  const resolveAvatar = (url?: string) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/avatars')) return url; // Frontend mock avatars
+    return `${API_BASE_URL}${url}`;
   };
 
   const getStatusText = (state: string) => {
@@ -35,8 +43,8 @@ export default function UserUniverse({ users }: UserUniverseProps) {
         {users.map(user => (
           <div key={user.id} className={styles.userCard}>
             <div className={styles.userAvatar}>
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className={styles.avatarImage} />
+              {resolveAvatar(user.avatar) ? (
+                <img src={resolveAvatar(user.avatar)!} alt={user.name} className={styles.avatarImage} />
               ) : (
                 <div className={styles.avatarCircle}>
                   {user.name.charAt(0).toUpperCase()}
