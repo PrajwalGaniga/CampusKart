@@ -52,6 +52,11 @@ export function useDashboardData(isSimulationEnabled: boolean) {
         simulator.stop();
         setSimulator(null);
       }
+    }
+  }, [isSimulationEnabled, handleEvent]); // Notice no 'simulator' or 'users.length'
+
+  useEffect(() => {
+    if (isSimulationEnabled) return;
       
       setHealth(h => ({ ...h, websocket: wsStatus }));
       
@@ -134,8 +139,7 @@ export function useDashboardData(isSimulationEnabled: boolean) {
       fetchLive();
       const interval = setInterval(fetchLive, 10000);
       return () => clearInterval(interval);
-    }
-  }, [isSimulationEnabled, handleEvent, wsStatus, users.length, simulator]);
+  }, [isSimulationEnabled, wsStatus]);
 
   // Compute Active Clusters dynamically from events
   const activeClusters = useMemo(() => {

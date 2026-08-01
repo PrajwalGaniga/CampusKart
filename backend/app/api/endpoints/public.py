@@ -29,7 +29,7 @@ async def get_public_feed(limit: int = 20):
         ask_data["id"] = str(ask.id)
         # Anonymize
         ask_data["requester_name"] = f"Student near {ask.location}"
-        ask_data["requester_id"] = "anonymous"
+        # Preserve actual ID so frontend can link to user roster
         # The prompt says no personal info, so default image
         ask_data["requester_image"] = "/static/default.png"
         
@@ -51,6 +51,7 @@ async def get_public_stats():
     expired_asks = await Ask.find(Ask.status == "EXPIRED").count()
     
     online_users = await User.find(User.status == "ONLINE").count()
+    total_users = await User.find_all().count()
     
     # Placeholder for average response time as per prompt
     avg_response_time = "5m"
@@ -63,6 +64,7 @@ async def get_public_stats():
         "locked_asks": locked_asks,
         "expired_asks": expired_asks,
         "online_users": online_users,
+        "total_users": total_users,
         "total_events": total_events,
         "average_response_time": avg_response_time
     }
@@ -122,10 +124,11 @@ async def get_public_events(limit: int = 50):
     
     # PulseEventType: 'ask_created' | 'ask_replied' | 'ask_matched' | 'ask_expired' | 'system_message'
     action_map = {
-        "CREATE_ASK": "ask_created",
-        "REPLY": "ask_replied",
-        "MATCH_FOUND": "ask_matched",
-        "EXPIRE_ASK": "ask_expired",
+        "ASK_CREATED": "ask_created",
+        "REPLY_CREATED": "ask_replied",
+        "ASK_RESOLVED": "ask_matched",
+        "ASK_DELETED": "ask_expired",
+        "ASK_LOCKED": "ask_expired",
     }
     
     for log in logs:

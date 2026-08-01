@@ -59,7 +59,6 @@ async def create_ask(req: AskCreate, current_user: User) -> AskResponse:
     public_ask = map_ask_to_response(ask, current_user).model_dump()
     public_ask["requester_name"] = f"Student near {ask.location}"
     public_ask["requester_image"] = "/static/default.png"
-    public_ask["requester_id"] = "anonymous"
     await manager.broadcast_public("ASK_CREATED", public_ask)
     
     return map_ask_to_response(ask, current_user)

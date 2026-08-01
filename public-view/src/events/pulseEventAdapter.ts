@@ -8,10 +8,10 @@ export function parseRawEvent(raw: any): PulseEvent | null {
   switch (eventName) {
     case 'ASK_CREATED': {
       return { 
-        id: raw.data.ask_id + '_created',
+        id: (raw.data.id || raw.data.ask_id) + '_created',
         type: 'ask_created', 
-        askId: raw.data.ask_id, 
-        fromUserId: raw.data.requester_name || raw.data.requester_id || 'Anonymous', 
+        askId: raw.data.id || raw.data.ask_id, 
+        fromUserId: raw.data.requester_id || 'Anonymous', 
         message: raw.data.description || 'New ask',
         ts 
       };
