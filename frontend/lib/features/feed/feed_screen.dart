@@ -638,37 +638,15 @@ class _ReplyFormState extends ConsumerState<_ReplyForm> {
     }
 
     setState(() => _isSubmitting = true);
-    try {
-      await ref.read(feedProvider.notifier).replyToAsk(widget.askId, _controller.text, finalEta);
+    
+    // Fire and forget for instant UI response
+    ref.read(feedProvider.notifier).replyToAsk(widget.askId, _controller.text, finalEta).catchError((e) {
       if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Reply posted! 🚀'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        String errorMessage = 'Failed: $e';
-        if (e is DioException) {
-          if (e.response?.data != null) {
-            var data = e.response!.data;
-            if (data is String) {
-              try {
-                data = jsonDecode(data);
-              } catch (_) {}
-            }
-            if (data is Map && data.containsKey('detail')) {
-              errorMessage = data['detail'].toString();
-            } else {
-              errorMessage = 'Error ${e.response?.statusCode}: ${e.response?.statusMessage}';
-            }
-          } else {
-            errorMessage = e.message ?? 'Unknown network error';
+        String errorMessage = 'Failed to post reply';
+        if (e is DioException && e.response?.data != null) {
+          var data = e.response!.data;
+          if (data is Map && data.containsKey('detail')) {
+            errorMessage = data['detail'].toString();
           }
         }
         ScaffoldMessenger.of(context).showSnackBar(
@@ -676,13 +654,24 @@ class _ReplyFormState extends ConsumerState<_ReplyForm> {
             content: Text(errorMessage),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+    });
+    
+    if (mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Reply posted! 🚀'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
+    
+    if (mounted) setState(() => _isSubmitting = false);
   }
 
   @override

@@ -54,19 +54,28 @@ class FeedNotifier extends StateNotifier<AsyncValue<List<Ask>>> {
   }
 
   Future<void> replyToAsk(String askId, String message, int? arrivalEtaMinutes) async {
+    // Optimistic Update
+    List<Ask>? previousState;
+    if (state.hasValue) {
+      previousState = state.value;
+      repliedAskIds.add(askId);
+      final asks = previousState!.map((ask) {
+        if (ask.id == askId) {
+          return ask.copyWith(reply_count: ask.reply_count + 1);
+        }
+        return ask;
+      }).toList();
+      state = AsyncValue.data(asks);
+    }
+
     try {
       await _repository.createReply(askId, message, arrivalEtaMinutes);
-      repliedAskIds.add(askId);
-      if (state.hasValue) {
-        final asks = state.value!.map((ask) {
-          if (ask.id == askId) {
-            return ask.copyWith(reply_count: ask.reply_count + 1);
-          }
-          return ask;
-        }).toList();
-        state = AsyncValue.data(asks);
-      }
     } catch (e) {
+      // Rollback on failure
+      repliedAskIds.remove(askId);
+      if (previousState != null) {
+        state = AsyncValue.data(previousState);
+      }
       rethrow;
     }
   }
