@@ -58,7 +58,9 @@ export function useDashboardData(isSimulationEnabled: boolean) {
       // Fetch events only once to restore state on refresh
       const fetchInitialEvents = async () => {
         try {
-          const eventsRes = await axios.get(`${API_BASE_URL}/api/v1/public/events`).catch(() => null);
+          const eventsRes = await axios.get(`${API_BASE_URL}/api/v1/public/events`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          }).catch(() => null);
           if (eventsRes && Array.isArray(eventsRes.data)) {
             setEvents(prev => {
               // Merge if there are new live events already, otherwise just use initial
@@ -81,7 +83,9 @@ export function useDashboardData(isSimulationEnabled: boolean) {
         try {
           // If endpoints exist on backend, they would be called here.
           // Fallback to empty/placeholder if not available on backend for public view.
-          const res = await axios.get(`${API_BASE_URL}/api/v1/public/stats`).catch(() => null);
+          const res = await axios.get(`${API_BASE_URL}/api/v1/public/stats`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          }).catch(() => null);
           if (res && res.data) {
             setMetrics({
               registeredUsers: res.data.total_users || 0,
@@ -93,7 +97,9 @@ export function useDashboardData(isSimulationEnabled: boolean) {
             });
           }
           
-          const healthRes = await axios.get(`${API_BASE_URL}/api/v1/public/health`).catch((err) => {
+          const healthRes = await axios.get(`${API_BASE_URL}/api/v1/public/health`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          }).catch((err) => {
             console.error("Health check failed:", err);
             setHealth(h => ({ 
               ...h, 
@@ -114,7 +120,9 @@ export function useDashboardData(isSimulationEnabled: boolean) {
             });
           }
           
-          const usersRes = await axios.get(`${API_BASE_URL}/api/v1/public/users`).catch(() => null);
+          const usersRes = await axios.get(`${API_BASE_URL}/api/v1/public/users`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          }).catch(() => null);
           if (usersRes && Array.isArray(usersRes.data)) {
             setUsers(usersRes.data);
           }
