@@ -77,7 +77,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     width: 80,
                     height: 80,
                     decoration: primaryGradientDecoration(radius: 22),
-                    child: const Icon(Icons.school_rounded, size: 44, color: Colors.white),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: Image.asset('assets/icon/app-logo.png', width: 80, height: 80, fit: BoxFit.cover),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 28),

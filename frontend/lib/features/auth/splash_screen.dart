@@ -88,10 +88,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           width: 1.5,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        size: 56,
-                        color: Colors.white,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(26),
+                        child: Image.asset('assets/icon/app-logo.png', width: 100, height: 100, fit: BoxFit.cover),
                       ),
                     ),
                     const SizedBox(height: 24),
