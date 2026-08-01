@@ -111,3 +111,50 @@ async def get_public_health():
         "docker_status": "operational",
         "websocket_status": "operational"
     }
+
+@router.get("/events")
+async def get_public_events(limit: int = 50):
+    """
+    Get recent activity logs mapped to PulseEvents for the public timeline.
+    """
+    logs = await ActivityLog.find_all().sort(-ActivityLog.created_at).limit(limit).to_list()
+    events = []
+    
+    # PulseEventType: 'ask_created' | 'ask_replied' | 'ask_matched' | 'ask_expired' | 'system_message'
+    action_map = {
+        "CREATE_ASK": "ask_created",
+        "REPLY": "ask_replied",
+        "MATCH_FOUND": "ask_matched",
+        "EXPIRE_ASK": "ask_expired",
+    }
+    
+    for log in logs:
+        pulse_type = action_map.get(log.action, "system_message")
+        events.append({
+            "id": str(log.id),
+            "type": pulse_type,
+            "askId": log.metadata.get("ask_id"),
+            "fromUserId": log.user_id,
+            "helperId": log.metadata.get("helper_id") if log.action == "MATCH_FOUND" else None,
+            "message": log.metadata.get("title") or log.metadata.get("message") or f"System event: {log.action}",
+            "ts": int(log.created_at.timestamp() * 1000)
+        })
+    return events
+
+@router.get("/users")
+async def get_public_users():
+    """
+    Get all users for the dashboard User Roster.
+    """
+    users = await User.find_all().to_list()
+    result = []
+    for idx, u in enumerate(users):
+        result.append({
+            "id": str(u.id),
+            "name": f"Student {str(u.id)[-4:]}", 
+            "username": f"student_{idx}",
+            "isOnline": u.status == "ONLINE",
+            "state": "idle",
+            "friendsCount": 0
+        })
+    return result

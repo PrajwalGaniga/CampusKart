@@ -55,6 +55,27 @@ export function useDashboardData(isSimulationEnabled: boolean) {
       
       setHealth(h => ({ ...h, websocket: wsStatus }));
       
+      // Fetch events only once to restore state on refresh
+      const fetchInitialEvents = async () => {
+        try {
+          const eventsRes = await axios.get(`${API_BASE_URL}/api/v1/public/events`).catch(() => null);
+          if (eventsRes && Array.isArray(eventsRes.data)) {
+            setEvents(prev => {
+              // Merge if there are new live events already, otherwise just use initial
+              if (prev.length > 0) {
+                const existingIds = new Set(prev.map(e => e.id));
+                const newEvents = eventsRes.data.filter((e: any) => !existingIds.has(e.id));
+                return [...prev, ...newEvents].sort((a, b) => b.ts - a.ts).slice(0, 100);
+              }
+              return eventsRes.data.slice(0, 100);
+            });
+          }
+        } catch (e) {
+          console.error("Failed to fetch initial events", e);
+        }
+      };
+      fetchInitialEvents();
+      
       // Fetch live initial data
       const fetchLive = async () => {
         try {
@@ -82,13 +103,9 @@ export function useDashboardData(isSimulationEnabled: boolean) {
             });
           }
           
-          // Users list: since this is a public dashboard without auth, we might just show an empty universe
-          // until they start interacting, or we can seed it with a few placeholders if the API fails.
           const usersRes = await axios.get(`${API_BASE_URL}/api/v1/public/users`).catch(() => null);
           if (usersRes && Array.isArray(usersRes.data)) {
             setUsers(usersRes.data);
-          } else if (users.length === 0) {
-            // Keep it empty, users will appear as events come in
           }
         } catch (e) {
           console.error(e);
