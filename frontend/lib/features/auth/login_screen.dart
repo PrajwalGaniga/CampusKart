@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     decoration: primaryGradientDecoration(radius: 22),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(22),
-                      child: Image.asset('assets/icon/app-logo.png', width: 80, height: 80, fit: BoxFit.cover),
+                      child: Image.asset('assets/icon/new-app-logo.png', width: 80, height: 80, fit: BoxFit.cover),
                     ),
                   ),
                 ),

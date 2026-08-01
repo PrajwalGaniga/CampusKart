@@ -90,7 +90,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(26),
-                        child: Image.asset('assets/icon/app-logo.png', width: 100, height: 100, fit: BoxFit.cover),
+                        child: Image.asset('assets/icon/new-app-logo.png', width: 100, height: 100, fit: BoxFit.cover),
                       ),
                     ),
                     const SizedBox(height: 24),
