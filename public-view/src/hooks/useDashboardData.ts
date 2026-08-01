@@ -7,6 +7,7 @@ import { API_BASE_URL } from '../config';
 
 export function useDashboardData(isSimulationEnabled: boolean) {
   const [events, setEvents] = useState<PulseEvent[]>([]);
+  const [openAsks, setOpenAsks] = useState<any[]>([]);
   const [users, setUsers] = useState<UserStatus[]>([]);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     registeredUsers: 0, onlineUsers: 0, openAsks: 0, resolvedAsks: 0, repliesToday: 0, avgResponseTimeMs: 0
@@ -123,6 +124,13 @@ export function useDashboardData(isSimulationEnabled: boolean) {
               return eventsRes.data.slice(0, 100);
             });
           }
+          
+          const feedRes = await axios.get(`${API_BASE_URL}/api/v1/public/feed`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          }).catch(() => null);
+          if (feedRes && Array.isArray(feedRes.data)) {
+            setOpenAsks(feedRes.data);
+          }
         } catch (e) {
           console.error(e);
         }
@@ -133,14 +141,27 @@ export function useDashboardData(isSimulationEnabled: boolean) {
       return () => clearInterval(interval);
   }, [isSimulationEnabled, wsStatus]);
 
-  // Compute Active Clusters dynamically from events
+  // Compute Active Clusters dynamically from actual open asks and events
   const activeClusters = useMemo(() => {
     const asks = new Map<string, { asker: string; replies: string[]; resolvedHelper?: string; timestamp: number }>();
     
-    // Process events chronologically (reverse the reverse)
+    // First, populate clusters with ALL open asks directly from the database feed
+    if (!isSimulationEnabled) {
+      openAsks.forEach(ask => {
+        asks.set(ask.id, { 
+          asker: ask.requester_id, 
+          replies: [], 
+          timestamp: new Date(ask.created_at).getTime() 
+        });
+      });
+    }
+    
+    // Then process events chronologically (reverse the reverse) to add repliers and handle state
     [...events].reverse().forEach(e => {
       if (e.type === 'ask_created' && e.askId) {
-        asks.set(e.askId, { asker: e.fromUserId || 'Unknown', replies: [], timestamp: e.ts });
+        if (!asks.has(e.askId)) {
+           asks.set(e.askId, { asker: e.fromUserId || 'Unknown', replies: [], timestamp: e.ts });
+        }
       } else if (e.type === 'ask_replied' && e.askId) {
         const ask = asks.get(e.askId);
         if (ask && e.fromUserId && !ask.replies.includes(e.fromUserId)) {
@@ -166,7 +187,7 @@ export function useDashboardData(isSimulationEnabled: boolean) {
     }
 
     return asks;
-  }, [events]);
+  }, [events, openAsks, isSimulationEnabled]);
 
   return { events, users, metrics, health, activeClusters };
 }

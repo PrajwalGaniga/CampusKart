@@ -38,7 +38,7 @@ export default function Dashboard() {
           {/* Right Column: Logs and Status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Section 4: Live Event Feed */}
-            <EventTimeline events={events} />
+            <EventTimeline events={events} users={users} />
             
             {/* Section 5: System Monitors */}
             <SystemHealth health={health} />

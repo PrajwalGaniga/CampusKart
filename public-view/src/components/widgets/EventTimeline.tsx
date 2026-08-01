@@ -6,9 +6,10 @@ import styles from '../../pages/Dashboard.module.css';
 
 interface EventTimelineProps {
   events: PulseEvent[];
+  users?: UserStatus[];
 }
 
-export default function EventTimeline({ events }: EventTimelineProps) {
+export default function EventTimeline({ events, users = [] }: EventTimelineProps) {
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'ask_created': return <MessageCircle size={16} />;
@@ -59,7 +60,7 @@ export default function EventTimeline({ events }: EventTimelineProps) {
                   </div>
                 </div>
                 <div className={styles.timelineDesc}>
-                  {event.type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} - User {event.fromUserId || 'System'}
+                  {event.type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} - User {users.find(u => u.id === event.fromUserId)?.name || event.fromUserId || 'System'}
                 </div>
               </div>
             </motion.div>
