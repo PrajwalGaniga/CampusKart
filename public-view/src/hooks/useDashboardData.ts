@@ -60,30 +60,7 @@ export function useDashboardData(isSimulationEnabled: boolean) {
       
       setHealth(h => ({ ...h, websocket: wsStatus }));
       
-      // Fetch events only once to restore state on refresh
-      const fetchInitialEvents = async () => {
-        try {
-          const eventsRes = await axios.get(`${API_BASE_URL}/api/v1/public/events`, {
-            headers: { 'ngrok-skip-browser-warning': 'true' }
-          }).catch(() => null);
-          if (eventsRes && Array.isArray(eventsRes.data)) {
-            setEvents(prev => {
-              // Merge if there are new live events already, otherwise just use initial
-              if (prev.length > 0) {
-                const existingIds = new Set(prev.map(e => e.id));
-                const newEvents = eventsRes.data.filter((e: any) => !existingIds.has(e.id));
-                return [...prev, ...newEvents].sort((a, b) => b.ts - a.ts).slice(0, 100);
-              }
-              return eventsRes.data.slice(0, 100);
-            });
-          }
-        } catch (e) {
-          console.error("Failed to fetch initial events", e);
-        }
-      };
-      fetchInitialEvents();
-      
-      // Fetch live initial data
+      // Fetch live data including events every 1 second
       const fetchLive = async () => {
         try {
           // If endpoints exist on backend, they would be called here.
@@ -131,13 +108,28 @@ export function useDashboardData(isSimulationEnabled: boolean) {
           if (usersRes && Array.isArray(usersRes.data)) {
             setUsers(usersRes.data);
           }
+          
+          const eventsRes = await axios.get(`${API_BASE_URL}/api/v1/public/events`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+          }).catch(() => null);
+          if (eventsRes && Array.isArray(eventsRes.data)) {
+            setEvents(prev => {
+              if (prev.length > 0) {
+                const existingIds = new Set(prev.map(e => e.id));
+                const newEvents = eventsRes.data.filter((e: any) => !existingIds.has(e.id));
+                if (newEvents.length === 0) return prev;
+                return [...prev, ...newEvents].sort((a, b) => b.ts - a.ts).slice(0, 100);
+              }
+              return eventsRes.data.slice(0, 100);
+            });
+          }
         } catch (e) {
           console.error(e);
         }
       };
       
       fetchLive();
-      const interval = setInterval(fetchLive, 10000);
+      const interval = setInterval(fetchLive, 1000);
       return () => clearInterval(interval);
   }, [isSimulationEnabled, wsStatus]);
 

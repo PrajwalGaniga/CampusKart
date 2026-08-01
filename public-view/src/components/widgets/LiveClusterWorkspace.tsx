@@ -6,9 +6,10 @@ import styles from '../../pages/Dashboard.module.css';
 interface LiveClusterWorkspaceProps {
   activeClusters: Map<string, { asker: string; replies: string[]; resolvedHelper?: string; timestamp: number }>;
   users: UserStatus[];
+  isSimulationEnabled?: boolean;
 }
 
-export default function LiveClusterWorkspace({ activeClusters, users }: LiveClusterWorkspaceProps) {
+export default function LiveClusterWorkspace({ activeClusters, users, isSimulationEnabled }: LiveClusterWorkspaceProps) {
   const clusters = Array.from(activeClusters.entries());
 
   // Helper to find a user by ID
@@ -19,7 +20,9 @@ export default function LiveClusterWorkspace({ activeClusters, users }: LiveClus
 
   return (
     <div className={styles.card} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <h2 className={styles.cardTitle}>Live Cluster Workspace</h2>
+      <h2 className={styles.cardTitle}>
+        {isSimulationEnabled ? "Simulation Workspace" : "Live Cluster Workspace"}
+      </h2>
       
       <div className={styles.workspaceContainer}>
         {clusters.length === 0 ? (

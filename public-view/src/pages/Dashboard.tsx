@@ -29,7 +29,7 @@ export default function Dashboard() {
           {/* Left Column: Visualizations */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', gridColumn: 'span 2' }}>
             {/* Section 3: The Hero */}
-            <LiveClusterWorkspace activeClusters={activeClusters} users={users} />
+            <LiveClusterWorkspace activeClusters={activeClusters} users={users} isSimulationEnabled={isSimulationEnabled} />
             
             {/* Section 2: User Roster */}
             <UserUniverse users={users} />
