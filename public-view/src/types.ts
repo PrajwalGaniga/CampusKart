@@ -39,4 +39,5 @@ export interface SystemHealth {
   mongo: 'connected' | 'connecting' | 'error';
   websocket: 'connected' | 'connecting' | 'error';
   latency: number;
+  errorMsg?: string;
 }

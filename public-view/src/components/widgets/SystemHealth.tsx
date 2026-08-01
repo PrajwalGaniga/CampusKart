@@ -83,6 +83,14 @@ export default function SystemHealth({ health }: SystemHealthProps) {
           </div>
         </div>
       </div>
+      
+      {health.errorMsg && (
+        <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#FEF2F2', color: '#991B1B', borderRadius: '6px', fontSize: '0.875rem', border: '1px solid #F87171' }}>
+          <strong>Connection Error:</strong> {health.errorMsg}
+          <br/>
+          <small>Check if the backend is running and reachable.</small>
+        </div>
+      )}
     </div>
   );
 }

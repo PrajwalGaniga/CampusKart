@@ -93,13 +93,24 @@ export function useDashboardData(isSimulationEnabled: boolean) {
             });
           }
           
-          const healthRes = await axios.get(`${API_BASE_URL}/api/v1/public/health`).catch(() => null);
+          const healthRes = await axios.get(`${API_BASE_URL}/api/v1/public/health`).catch((err) => {
+            console.error("Health check failed:", err);
+            setHealth(h => ({ 
+              ...h, 
+              backend: 'error', 
+              mongo: 'error', 
+              errorMsg: err.message || "Network Error: Could not reach backend API"
+            }));
+            return null;
+          });
+          
           if (healthRes && healthRes.data) {
             setHealth({
               backend: healthRes.data.api_status === 'operational' ? 'connected' : 'error',
               mongo: healthRes.data.db_status === 'operational' ? 'connected' : 'error',
               websocket: wsStatus,
-              latency: parseInt(healthRes.data.api_latency) || 0
+              latency: parseInt(healthRes.data.api_latency) || 0,
+              errorMsg: undefined
             });
           }
           
