@@ -27,11 +27,14 @@ async def get_public_feed(limit: int = 20):
     for ask in asks:
         ask_data = ask.model_dump()
         ask_data["id"] = str(ask.id)
-        # Anonymize
-        ask_data["requester_name"] = f"Student near {ask.location}"
-        # Preserve actual ID so frontend can link to user roster
-        # The prompt says no personal info, so default image
-        ask_data["requester_image"] = "/static/default.png"
+        # Fetch actual user details
+        user = await User.get(ask.requester_id)
+        if user:
+            ask_data["requester_name"] = user.display_name
+            ask_data["requester_image"] = user.profile_picture
+        else:
+            ask_data["requester_name"] = "Unknown"
+            ask_data["requester_image"] = "/static/default.png"
         
         # Add string versions of dates
         ask_data["created_at"] = ask.created_at.isoformat()
@@ -151,11 +154,12 @@ async def get_public_users():
     """
     users = await User.find_all().to_list()
     result = []
-    for idx, u in enumerate(users):
+    for u in users:
         result.append({
             "id": str(u.id),
-            "name": f"Student {str(u.id)[-4:]}", 
-            "username": f"student_{idx}",
+            "name": u.display_name,
+            "username": u.username,
+            "avatar": u.profile_picture,
             "isOnline": u.status == "ONLINE",
             "state": "idle",
             "friendsCount": 0
